@@ -1,2 +1,2 @@
 # WolfRender
-Exploring wold3d-style rendering technique
+Exploring wolf3d-style rendering technique
