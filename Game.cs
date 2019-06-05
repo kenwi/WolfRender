@@ -27,10 +27,10 @@ namespace WolfRender
             gameTime = new Clock();
             previousTime = gameTime.ElapsedTime;
 
-            window = new RenderWindow(new VideoMode(512, 512, VideoMode.DesktopMode.BitsPerPixel), "");
+            window = new RenderWindow(new VideoMode(1024, 900, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
             effects = new Effect[]{
-                new MapEffect()
-                //new DoomFireEffect()
+                new MapEffect(),
+                new HelpScreenEffect()            
             };
         }
 
@@ -51,11 +51,11 @@ namespace WolfRender
             FrameNumber++;
         }
 
-        public void Update()
+        public void Update(float dt)
         {
             foreach (var effect in effects)
             {
-                effect.Update(gameTime.ElapsedTime.AsSeconds());
+                effect.Update(dt);
             }
         }
     }
