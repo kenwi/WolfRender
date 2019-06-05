@@ -19,9 +19,8 @@ namespace WolfRender
                 {
                     dt += Game.Instance.DeltaTime;
                     InputHandler.Instance.Update();
-                    System.Threading.Thread.Sleep(1000 / 60);
                 }
-                Game.Instance.Update();
+                Game.Instance.Update(dt);
                 Game.Instance.Render();
             }
         }
