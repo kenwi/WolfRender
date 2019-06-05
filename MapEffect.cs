@@ -32,7 +32,9 @@ namespace WolfRender
         };
 
         int[] pixels;
-        int MapSize => (int)Math.Sqrt(map.Length);
+        // int MapSize => (int)Math.Sqrt(map.Length);
+        int mapSizeX;
+        int mapSizeY;
         int windowWidth => (int)Game.Instance.Window.Size.X;
         int windowHeight => (int)Game.Instance.Window.Size.Y;
         float fov;
@@ -47,12 +49,14 @@ namespace WolfRender
         public MapEffect() : base("MapTestEffect")
         {
             texture = new Texture(Game.Instance.Window.Size.X, Game.Instance.Window.Size.Y);
-            cellSize = new Vector2(windowWidth / MapSize, windowHeight / MapSize);
+            mapSizeX = 16;
+            mapSizeY = 16;
+            cellSize = new Vector2(windowWidth / mapSizeX, windowHeight / mapSizeY);
             pixels = new int[windowWidth * windowHeight];
 
-            fov = 85;
-            playerDirection = 3.1415f / 2;
-            playerPosition = new Vector2(MapSize / 4);
+            fov = 80f * 0.01745329f;
+            playerDirection = 0;
+            playerPosition = new Vector2(mapSizeX / 4, mapSizeY / 4);
 
             updated = true;
             render();
@@ -62,18 +66,69 @@ namespace WolfRender
         void render()
         {
             int cellId = 0;
-            for (int y = 0; y < MapSize; y++)
+            for (int y = 0; y < mapSizeY; y++)
             {
-                for (int x = 0; x < MapSize; x++)
+                for (int x = 0; x < mapSizeX; x++)
                 {
                     var cellColorId = map[cellId++];
                     var cellColor = palette.AsSpan(cellColorId * 3, 3);
                     drawRectangle(pixels, windowWidth, windowHeight, x * (int)cellSize.X, y * (int)cellSize.Y, (int)cellSize.X, (int)cellSize.Y, pack_color(cellColor[0], cellColor[1], cellColor[2]));
                 }
             }
-            raycast(playerPosition, playerDirection - (float)Math.Sin(3.1415 / 180 * fov * 0.5), true);
-            raycast(playerPosition, playerDirection + (float)Math.Sin(3.1415 / 180 * fov * 0.5), true);
             drawEntity(playerPosition, 5, pack_color(0, 0, 255));
+
+            for (int i = 0; i < windowWidth; i++)
+            {
+                var angle = playerDirection - (fov / 2) + fov * i / windowWidth;
+                bool visible = (i == 0 || i == windowWidth - 1) ? true : false;
+                if (visible)
+                    raycast(playerPosition, angle, visible);
+
+                for (float rayLength = 0; rayLength < 20; rayLength += 0.02f)
+                {
+                    float cx = playerPosition.X + rayLength * MathF.Cos(angle);
+                    float cy = playerPosition.Y + rayLength * MathF.Sin(angle);
+
+                    int rect_w = windowWidth / mapSizeX;
+                    int rect_h = windowHeight / mapSizeY;
+
+                    int pix_x = (int)cx * rect_w;
+                    int pix_y = (int)cy * rect_h;
+
+                    if (map[(int)cx + (int)cy * mapSizeX] != 0)
+                    {
+                        var columnHeight = windowHeight / (rayLength * Math.Cos(angle - playerDirection));
+                        drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, pack_color(255, 0, 0));
+                        break;
+                    }
+                }
+            }
+            // for (int i = 0; i < windowWidth; i++)
+            // {
+            //     bool visible = (i == 0 || i == windowWidth - 1) ? true : false;
+            //     var angle = playerDirection - (fov / 2) + fov * i / windowWidth;
+            //     var length = raycast(playerPosition, angle, visible);
+            //     var columnHeight = windowHeight / (length * Math.Cos(angle - playerDirection));
+            //     // drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight-1, pack_color(255, 0, 0));
+            // }
+
+        }
+
+        float raycast(Vector2 position, float direction, bool render = false)
+        {
+            float length = 0, step = 0.01f;
+            for (; length < 10; length += step)
+            {
+                var dx = position.X + length * Math.Cos(direction);
+                var dy = position.Y + length * Math.Sin(direction);
+
+                if (map[(int)dx + (int)dy * 16] != 0)
+                    break;
+
+                if (render)
+                    setPixel(new Vector2((float)dx, (float)dy), pack_color(0, 255, 0));
+            }
+            return length;
         }
 
         void updateFrame()
@@ -88,23 +143,14 @@ namespace WolfRender
         {
             int x = (int)(position.X * cellSize.X);
             int y = (int)(position.Y * cellSize.Y);
+
+            if (x < 0 || x > windowWidth)
+                return;
+            if (y < 0 || y > windowHeight)
+                return;
+
             int index = x + y * windowWidth;
             pixels[index] = color;
-        }
-
-        float raycast(Vector2 position, float direction, bool render = false)
-        {
-            float length = 0, step = 0.05f;
-            for (; length < 20; length += step)
-            {
-                var dx = position.X + length * Math.Cos(direction);
-                var dy = position.Y + length * Math.Sin(direction);
-                if (map[(int)dx + (int)dy * MapSize] != 0)
-                    break;
-                if (render)
-                    setPixel(new Vector2((float)dx, (float)dy), pack_color(255, 0, 0));
-            }
-            return length;
         }
 
         void drawEntity(Vector2 position, int size, int color)
@@ -114,13 +160,17 @@ namespace WolfRender
 
         void drawRectangle(int[] img, int width, int height, int x, int y, int w, int h, int color)
         {
+            if (h > windowHeight)
+                return;
+
             for (int i = 0; i < w; i++)
             {
                 for (int j = 0; j < h; j++)
                 {
                     var cx = x + i;
                     var cy = y + j;
-                    img[cx + cy * width] = color;
+                    var index = cx + cy * width;
+                    img[index] = color;
                 }
             }
         }
@@ -136,40 +186,40 @@ namespace WolfRender
             updated = false;
         }
 
-        protected override void OnUpdate(float time)
+        protected override void OnUpdate(float dt)
         {
-            var rotationSpeed = 3.1415f / 180 * 5f;
+            var rotationSpeed = 3.1415f / 180 * 100;
             if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
             {
-                playerDirection -= rotationSpeed;
+                playerDirection -= rotationSpeed * dt;
                 updated = true;
             }
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
             {
-                playerDirection += rotationSpeed;
+                playerDirection += rotationSpeed * dt;
                 updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
             {
-                playerPosition.X += 0.1f * (float)Math.Cos(playerDirection);
-                playerPosition.Y += 0.1f * (float)Math.Sin(playerDirection);
+                playerPosition.X += 1 * (float)Math.Cos(playerDirection) * dt;
+                playerPosition.Y += 1 * (float)Math.Sin(playerDirection) * dt;
                 updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
             {
-                playerPosition.X -= 0.1f * (float)Math.Cos(playerDirection);
-                playerPosition.Y -= 0.1f * (float)Math.Sin(playerDirection);
+                playerPosition.X -= 1 * (float)Math.Cos(playerDirection) * dt;
+                playerPosition.Y -= 1 * (float)Math.Sin(playerDirection) * dt;
                 updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.PageUp))
             {
-                fov++;
+                fov += dt;
                 updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.PageDown))
             {
-                fov--;
+                fov -= dt;
                 updated = true;
             }
 
