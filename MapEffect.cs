@@ -70,35 +70,36 @@ namespace WolfRender
             {
                 for (int x = 0; x < mapSizeX; x++)
                 {
-                    var cellColorId = map[cellId++];
+                    // var cellColorId = map[cellId++];
+                    var cellColorId = y < windowHeight / 2 ? map[0] : map[map.Length-1];
                     var cellColor = palette.AsSpan(cellColorId * 3, 3);
                     drawRectangle(pixels, windowWidth, windowHeight, x * (int)cellSize.X, y * (int)cellSize.Y, (int)cellSize.X, (int)cellSize.Y, pack_color(cellColor[0], cellColor[1], cellColor[2]));
                 }
             }
-            drawEntity(playerPosition, 5, pack_color(0, 0, 255));
+            // drawEntity(playerPosition, 5, pack_color(0, 0, 255));
+                // bool visible = (i == 0 || i == windowWidth - 1) ? true : false;
+                // if (visible)
+                //     raycast(playerPosition, angle, visible);
 
+            int rect_w = windowWidth / mapSizeX;
+            int rect_h = windowHeight / mapSizeY;
             for (int i = 0; i < windowWidth; i++)
             {
-                var angle = playerDirection - (fov / 2) + fov * i / windowWidth;
-                bool visible = (i == 0 || i == windowWidth - 1) ? true : false;
-                if (visible)
-                    raycast(playerPosition, angle, visible);
+                var angle = playerDirection - fov / 2 + fov * i / windowWidth;
 
-                for (float rayLength = 0; rayLength < 20; rayLength += 0.02f)
+                for (float rayLength = 0; rayLength < 20; rayLength += 0.05f)
                 {
-                    float cx = playerPosition.X + rayLength * MathF.Cos(angle);
-                    float cy = playerPosition.Y + rayLength * MathF.Sin(angle);
+                    int cx = (int)(playerPosition.X + rayLength * MathF.Cos(angle));
+                    int cy = (int)(playerPosition.Y + rayLength * MathF.Sin(angle));
+                    int pix_x = cx * rect_w;
+                    int pix_y = cy * rect_h;
 
-                    int rect_w = windowWidth / mapSizeX;
-                    int rect_h = windowHeight / mapSizeY;
-
-                    int pix_x = (int)cx * rect_w;
-                    int pix_y = (int)cy * rect_h;
-
-                    if (map[(int)cx + (int)cy * mapSizeX] != 0)
+                    if (map[cx + cy * mapSizeX] != 0)
                     {
                         var columnHeight = windowHeight / (rayLength * Math.Cos(angle - playerDirection));
-                        drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, pack_color(255, 0, 0));
+                        var color = pack_color((byte)(255 - Math.Clamp(rayLength*rayLength, 10, 255)), 0, 0);
+
+                        drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
                         break;
                     }
                 }
