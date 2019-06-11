@@ -10,7 +10,7 @@ namespace WolfRender
             int targetfps = 60;
             float targetUpdateRate = 1f / targetfps;
 
-            Game.Instance.Init();
+            Game.Instance.Init(800, 800);
             InputHandler.Instance.Init();
             while (Game.Instance.Window.IsOpen)
             {
