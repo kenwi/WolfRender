@@ -45,6 +45,8 @@ namespace WolfRender
         Texture texture;
         Sprite sprite;
 
+        float degToRad(float radians) => radians * 0.01745329f;
+
         public MapEffect() : base("MapTestEffect")
         {
             texture = new Texture(Game.Instance.Window.Size.X, Game.Instance.Window.Size.Y);
@@ -53,7 +55,7 @@ namespace WolfRender
             cellSize = new Vector2(windowWidth / mapSizeX, windowHeight / mapSizeY);
             pixels = new int[windowWidth * windowHeight];
 
-            fov = 80f * 0.01745329f;
+            fov = degToRad(90);
             playerDirection = 0;
             playerPosition = new Vector2(mapSizeX / 4, mapSizeY / 4);
 
@@ -64,9 +66,15 @@ namespace WolfRender
         void render()
         {
             renderMap();
-            drawEntity(playerPosition, 5, pack_color(0, 0, 255));
-            raycast(playerPosition, playerDirection, true);
             render3D();
+            renderPlayer();
+        }
+
+        private void renderPlayer()
+        {
+            drawEntity(playerPosition, 5, pack_color(0, 0, 255));
+            raycast(playerPosition, playerDirection - fov / 2, true);
+            raycast(playerPosition, playerDirection + fov / 2, true);
         }
 
         private void renderMap()
@@ -105,7 +113,6 @@ namespace WolfRender
                         var columnHeight = Math.Min(2000, windowHeight / dist);
                         // var columnHeight = windowHeight / (rayLength * Math.Cos(angle - playerDirection));
                         var color = pack_color((byte)(255 - Math.Clamp(rayLength * rayLength, 10, 255)), 0, 0);
-
                         drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
                         break;
                     }
