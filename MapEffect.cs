@@ -37,6 +37,8 @@ namespace WolfRender
         int windowWidth => (int)Game.Instance.Window.Size.X;
         int windowHeight => (int)Game.Instance.Window.Size.Y;
 
+        int rayNum = 20;
+        float rayStep = 0.1f;
         float fov;
         float playerDirection;
         Vector2 playerPosition;
@@ -55,7 +57,7 @@ namespace WolfRender
             cellSize = new Vector2(windowWidth / mapSizeX, windowHeight / mapSizeY);
             pixels = new int[windowWidth * windowHeight];
 
-            fov = degToRad(90);
+            fov = MathF.PI * 0.5f;
             playerDirection = 0;
             playerPosition = new Vector2(mapSizeX / 4, mapSizeY / 4);
 
@@ -73,8 +75,8 @@ namespace WolfRender
         private void renderPlayer()
         {
             drawEntity(playerPosition, 5, pack_color(0, 0, 255));
-            raycast(playerPosition, playerDirection - fov / 2, true);
-            raycast(playerPosition, playerDirection + fov / 2, true);
+            raycast(playerPosition, playerDirection - fov * 0.5f, true);
+            raycast(playerPosition, playerDirection + fov * 0.5f, true);
         }
 
         private void renderMap()
@@ -97,9 +99,8 @@ namespace WolfRender
             int rect_h = windowHeight / mapSizeY;
             for (int i = 0; i < windowWidth; i++)
             {
-                var angle = playerDirection - fov / 2 + fov * i / windowWidth;
-
-                for (float rayLength = 0; rayLength < 20; rayLength += 0.01f)
+                var angle = playerDirection - fov * 0.5f + fov * i / windowWidth;
+                for (float rayLength = 0; rayLength < rayNum; rayLength += rayStep)
                 {
                     int cx = (int)(playerPosition.X + rayLength * MathF.Cos(angle));
                     int cy = (int)(playerPosition.Y + rayLength * MathF.Sin(angle));
@@ -122,17 +123,18 @@ namespace WolfRender
 
         float raycast(Vector2 position, float direction, bool render = false)
         {
-            float length = 0, step = 0.1f;
-            for (; length < 10; length += step)
+            float length = 0;
+            for (; length < rayNum; length += rayStep)
             {
                 var dx = position.X + length * Math.Cos(direction);
                 var dy = position.Y + length * Math.Sin(direction);
-
-                if (map[(int)dx + (int)dy * 16] != 0)
-                    break;
-
+                
                 if (render)
                     setPixel(new Vector2((float)dx, (float)dy), pack_color(0, 255, 0));
+
+                if (map[(int)dx + (int)dy * mapSizeX] != 0)
+                    break;
+
             }
             return length;
         }
@@ -148,11 +150,6 @@ namespace WolfRender
         {
             int x = (int)(position.X * cellSize.X);
             int y = (int)(position.Y * cellSize.Y);
-
-            if (x < 0 || x > windowWidth)
-                return;
-            if (y < 0 || y > windowHeight)
-                return;
 
             int index = x + y * windowWidth;
             pixels[index] = color;
