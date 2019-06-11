@@ -21,13 +21,13 @@ namespace WolfRender
         public int FrameNumber { get; set; }
         public float DeltaTime { get => calculateDt(); }
 
-        public void Init()
+        public void Init(uint width, uint height)
         {
             Random = new Random();
             gameTime = new Clock();
             previousTime = gameTime.ElapsedTime;
 
-            window = new RenderWindow(new VideoMode(1024, 900, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
+            window = new RenderWindow(new VideoMode(width, height, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
             effects = new Effect[]{
                 new MapEffect(),
                 new HelpScreenEffect()            

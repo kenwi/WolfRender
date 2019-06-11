@@ -32,19 +32,18 @@ namespace WolfRender
         };
 
         int[] pixels;
-        // int MapSize => (int)Math.Sqrt(map.Length);
         int mapSizeX;
         int mapSizeY;
         int windowWidth => (int)Game.Instance.Window.Size.X;
         int windowHeight => (int)Game.Instance.Window.Size.Y;
+
         float fov;
-        bool updated;
+        float playerDirection;
+        Vector2 playerPosition;
+
         Vector2 cellSize;
         Texture texture;
         Sprite sprite;
-
-        Vector2 playerPosition;
-        float playerDirection;
 
         public MapEffect() : base("MapTestEffect")
         {
@@ -58,36 +57,41 @@ namespace WolfRender
             playerDirection = 0;
             playerPosition = new Vector2(mapSizeX / 4, mapSizeY / 4);
 
-            updated = true;
             render();
             updateFrame();
         }
 
         void render()
         {
+            renderMap();
+            drawEntity(playerPosition, 5, pack_color(0, 0, 255));
+            raycast(playerPosition, playerDirection, true);
+            render3D();
+        }
+
+        private void renderMap()
+        {
             int cellId = 0;
             for (int y = 0; y < mapSizeY; y++)
             {
                 for (int x = 0; x < mapSizeX; x++)
                 {
-                    // var cellColorId = map[cellId++];
-                    var cellColorId = y < windowHeight / 2 ? map[0] : map[map.Length-1];
+                    var cellColorId = map[cellId++];
                     var cellColor = palette.AsSpan(cellColorId * 3, 3);
                     drawRectangle(pixels, windowWidth, windowHeight, x * (int)cellSize.X, y * (int)cellSize.Y, (int)cellSize.X, (int)cellSize.Y, pack_color(cellColor[0], cellColor[1], cellColor[2]));
                 }
             }
-            // drawEntity(playerPosition, 5, pack_color(0, 0, 255));
-                // bool visible = (i == 0 || i == windowWidth - 1) ? true : false;
-                // if (visible)
-                //     raycast(playerPosition, angle, visible);
+        }
 
+        private void render3D()
+        {
             int rect_w = windowWidth / mapSizeX;
             int rect_h = windowHeight / mapSizeY;
             for (int i = 0; i < windowWidth; i++)
             {
                 var angle = playerDirection - fov / 2 + fov * i / windowWidth;
 
-                for (float rayLength = 0; rayLength < 20; rayLength += 0.05f)
+                for (float rayLength = 0; rayLength < 20; rayLength += 0.01f)
                 {
                     int cx = (int)(playerPosition.X + rayLength * MathF.Cos(angle));
                     int cy = (int)(playerPosition.Y + rayLength * MathF.Sin(angle));
@@ -97,22 +101,13 @@ namespace WolfRender
                     if (map[cx + cy * mapSizeX] != 0)
                     {
                         var columnHeight = windowHeight / (rayLength * Math.Cos(angle - playerDirection));
-                        var color = pack_color((byte)(255 - Math.Clamp(rayLength*rayLength, 10, 255)), 0, 0);
+                        var color = pack_color((byte)(255 - Math.Clamp(rayLength * rayLength, 10, 255)), 0, 0);
 
                         drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
                         break;
                     }
                 }
             }
-            // for (int i = 0; i < windowWidth; i++)
-            // {
-            //     bool visible = (i == 0 || i == windowWidth - 1) ? true : false;
-            //     var angle = playerDirection - (fov / 2) + fov * i / windowWidth;
-            //     var length = raycast(playerPosition, angle, visible);
-            //     var columnHeight = windowHeight / (length * Math.Cos(angle - playerDirection));
-            //     // drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight-1, pack_color(255, 0, 0));
-            // }
-
         }
 
         float raycast(Vector2 position, float direction, bool render = false)
@@ -137,7 +132,6 @@ namespace WolfRender
             var bytes = new byte[windowWidth * windowHeight * 4];
             Buffer.BlockCopy(pixels, 0, bytes, 0, bytes.Length);
             texture.Update(bytes);
-            sprite = new Sprite(texture);
         }
 
         void setPixel(Vector2 position, int color)
@@ -161,9 +155,6 @@ namespace WolfRender
 
         void drawRectangle(int[] img, int width, int height, int x, int y, int w, int h, int color)
         {
-            if (h > windowHeight)
-                return;
-
             for (int i = 0; i < w; i++)
             {
                 for (int j = 0; j < h; j++)
@@ -178,13 +169,10 @@ namespace WolfRender
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            if (updated)
-            {
-                render();
-                updateFrame();
-            }
+            render();
+            updateFrame();
+            sprite = new Sprite(texture);
             target.Draw(sprite, states);
-            updated = false;
         }
 
         protected override void OnUpdate(float dt)
@@ -193,40 +181,33 @@ namespace WolfRender
             if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
             {
                 playerDirection -= rotationSpeed * dt;
-                updated = true;
             }
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
             {
                 playerDirection += rotationSpeed * dt;
-                updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
             {
                 playerPosition.X += 1 * (float)Math.Cos(playerDirection) * dt;
                 playerPosition.Y += 1 * (float)Math.Sin(playerDirection) * dt;
-                updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
             {
                 playerPosition.X -= 1 * (float)Math.Cos(playerDirection) * dt;
                 playerPosition.Y -= 1 * (float)Math.Sin(playerDirection) * dt;
-                updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.PageUp))
             {
                 fov += dt;
-                updated = true;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.PageDown))
             {
                 fov -= dt;
-                updated = true;
             }
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
                 Game.Instance.Window.Close();
-
         }
 
         int pack_color(byte r, byte g, byte b, byte a = 255)
