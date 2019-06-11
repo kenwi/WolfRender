@@ -95,12 +95,15 @@ namespace WolfRender
                 {
                     int cx = (int)(playerPosition.X + rayLength * MathF.Cos(angle));
                     int cy = (int)(playerPosition.Y + rayLength * MathF.Sin(angle));
+
                     int pix_x = cx * rect_w;
                     int pix_y = cy * rect_h;
 
                     if (map[cx + cy * mapSizeX] != 0)
                     {
-                        var columnHeight = windowHeight / (rayLength * Math.Cos(angle - playerDirection));
+                        var dist = rayLength * Math.Cos(angle - playerDirection);
+                        var columnHeight = Math.Min(2000, windowHeight / dist);
+                        // var columnHeight = windowHeight / (rayLength * Math.Cos(angle - playerDirection));
                         var color = pack_color((byte)(255 - Math.Clamp(rayLength * rayLength, 10, 255)), 0, 0);
 
                         drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
@@ -112,7 +115,7 @@ namespace WolfRender
 
         float raycast(Vector2 position, float direction, bool render = false)
         {
-            float length = 0, step = 0.01f;
+            float length = 0, step = 0.1f;
             for (; length < 10; length += step)
             {
                 var dx = position.X + length * Math.Cos(direction);
@@ -155,6 +158,9 @@ namespace WolfRender
 
         void drawRectangle(int[] img, int width, int height, int x, int y, int w, int h, int color)
         {
+            if (h > windowHeight || w > windowWidth)
+                return;
+
             for (int i = 0; i < w; i++)
             {
                 for (int j = 0; j < h; j++)
