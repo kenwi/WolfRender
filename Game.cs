@@ -29,8 +29,9 @@ namespace WolfRender
 
             window = new RenderWindow(new VideoMode(width, height, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
             effects = new Effect[]{
-                new MapEffect(),
-                new HelpScreenEffect()            
+                new MapEffect()
+                , new HelpScreenEffect()
+                , new FpsCounterEffect()            
             };
         }
 
