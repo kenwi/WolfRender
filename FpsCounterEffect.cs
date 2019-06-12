@@ -7,27 +7,26 @@ namespace WolfRender
     {
         Text fpsText;
         Font font;
+
+        uint characterSize = 15;
         int numFrames;
+
         Time timeSinceLastUpdate;
         Clock clock;
-        int padding;
 
-        Text createText(string content, uint size, Vector2f position)
+        Text createText(string content, uint size, Vector2f position) => new Text(content, font)
         {
-            Text text = new Text(content, font, size);
-            text.FillColor = Color.Black;
-            text.Position = new Vector2f(padding, Game.Instance.Window.Size.Y - text.CharacterSize - padding);
-            return text;
-        }
+            FillColor = Color.Black,
+            Position = position,
+            CharacterSize = size
+        };
 
         public FpsCounterEffect() : base("FpsCounterEffect")
         {
             clock = new Clock();
-            timeSinceLastUpdate = Time.Zero;
-            uint characterSize = 15;
-            padding = 4;
+            fpsText = new Text();
             font = new Font("cour.ttf");
-            fpsText = createText("Hello World", characterSize, new Vector2f(0, Game.Instance.Window.Size.Y));
+            timeSinceLastUpdate = Time.Zero;
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
@@ -40,6 +39,14 @@ namespace WolfRender
         {
             Time elapsed = clock.Restart();
             timeSinceLastUpdate += elapsed;
+            if (timeSinceLastUpdate.AsSeconds() > 0.5)
+            {
+                var windowHeight = Game.Instance.Window.Size.Y;
+                var fps = numFrames/timeSinceLastUpdate.AsSeconds();
+                fpsText = createText($"FPS: {fps}", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
+                timeSinceLastUpdate = Time.Zero;
+                numFrames = 0;
+            }
         }
     }
 }
