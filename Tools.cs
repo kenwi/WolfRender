@@ -4,6 +4,8 @@ namespace WolfRender
 {
     public static class Tools
     {
+        public static float DegToRad(float radians) => radians * 0.01745329f;
+
         public static int PackColor(byte r, byte g, byte b, byte a = 255)
         {
             return (a << 24) + (b << 16) + (g << 8) + r;
