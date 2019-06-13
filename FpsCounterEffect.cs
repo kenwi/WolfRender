@@ -43,7 +43,7 @@ namespace WolfRender
             {
                 var windowHeight = Game.Instance.Window.Size.Y;
                 var fps = numFrames/timeSinceLastUpdate.AsSeconds();
-                fpsText = createText($"FPS: {fps}", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
+                fpsText = createText($"FPS: {fps:0.#}", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
                 timeSinceLastUpdate = Time.Zero;
                 numFrames = 0;
             }
