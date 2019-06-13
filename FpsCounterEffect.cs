@@ -5,28 +5,29 @@ namespace WolfRender
 {
     public class FpsCounterEffect : Effect
     {
-        Text fpsText;
-        Font font;
-
-        uint characterSize = 15;
         int numFrames;
+        uint characterSize = 15;
 
-        Time timeSinceLastUpdate;
-        Clock clock;
+        Text fpsText = new Text();
+        Font font = new Font("cour.tff");
 
-        Text createText(string content, uint size, Vector2f position) => new Text(content, font)
-        {
-            FillColor = Color.Black,
-            Position = position,
-            CharacterSize = size
-        };
+        Time updateRate = Time.FromSeconds(0.5f);
+        Time timeSinceLastUpdate = Time.Zero;
+        Clock clock = new Clock();
 
         public FpsCounterEffect() : base("FpsCounterEffect")
         {
-            clock = new Clock();
-            fpsText = new Text();
-            font = new Font("cour.ttf");
-            timeSinceLastUpdate = Time.Zero;
+        }
+
+        void setText(string content, uint size, Vector2f position)
+        {
+            var text = new Text(content, font)
+            {
+                FillColor = Color.Black,
+                Position = position,
+                CharacterSize = size
+            };
+            fpsText = text;
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
@@ -39,11 +40,11 @@ namespace WolfRender
         {
             Time elapsed = clock.Restart();
             timeSinceLastUpdate += elapsed;
-            if (timeSinceLastUpdate.AsSeconds() > 0.5)
+            if (timeSinceLastUpdate > updateRate)
             {
                 var windowHeight = Game.Instance.Window.Size.Y;
-                var fps = numFrames/timeSinceLastUpdate.AsSeconds();
-                fpsText = createText($"FPS: {fps:0.#}", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
+                var fps = numFrames / timeSinceLastUpdate.AsSeconds();
+                setText($"FPS: {fps:0.#}", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
                 timeSinceLastUpdate = Time.Zero;
                 numFrames = 0;
             }
