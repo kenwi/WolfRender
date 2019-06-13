@@ -1,7 +1,6 @@
 using SFML.System;
 using SFML.Graphics;
 using SFML.Window;
-using System.Collections.Generic;
 using System;
 
 namespace WolfRender
@@ -20,6 +19,7 @@ namespace WolfRender
         public bool ShowHelpScreen { get; set; }
         public int FrameNumber { get; set; }
         public float DeltaTime { get => calculateDt(); }
+        public Player Player { get; set; }
 
         public void Init(uint width, uint height)
         {
@@ -28,10 +28,11 @@ namespace WolfRender
             previousTime = gameTime.ElapsedTime;
 
             window = new RenderWindow(new VideoMode(width, height, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
+            Player = new Player();
             effects = new Effect[]{
                 new MapEffect()
                 , new HelpScreenEffect()
-                , new FpsCounterEffect()            
+                , new FpsCounterEffect()
             };
         }
 
