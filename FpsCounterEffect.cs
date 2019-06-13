@@ -9,7 +9,7 @@ namespace WolfRender
         uint characterSize = 15;
 
         Text fpsText = new Text();
-        Font font = new Font("cour.tff");
+        Font font = new Font("cour.ttf");
 
         Time updateRate = Time.FromSeconds(0.5f);
         Time timeSinceLastUpdate = Time.Zero;
