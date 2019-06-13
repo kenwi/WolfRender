@@ -8,19 +8,27 @@ namespace WolfRender
     {
         Map map;
         Player player;
+        Vector2u cellSize;
         uint rayNum = 20;
-        float rayStep = 0.1f;
+        float rayStep = 0.01f;
         int[] pixels;
+
+        Texture texture;
 
         public MapRenderer(Map map, Player player) : base("MapRenderer")
         {
             this.map = map;
             this.player = player;
+            var windowWidth = Game.Instance.Window.Size.X;
+            var windowHeight = Game.Instance.Window.Size.Y;
+            texture = new Texture(windowWidth, windowHeight);
+            cellSize = new Vector2u(windowWidth / map.Size.X, windowHeight / map.Size.Y);
+            pixels = new int[windowWidth * windowHeight];
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            var fov = Game.Instance.Player.Fov;
+            var fov = player.Fov;
             var windowWidth = Game.Instance.Window.Size.X;
             var windowHeight = Game.Instance.Window.Size.Y;
             var mapSizeX = map.Size.X;
@@ -31,11 +39,11 @@ namespace WolfRender
             var rect = new Vector2f(windowWidth / mapSizeX, windowHeight / mapSizeY);
             for (int i = 0; i < windowWidth; i++)
             {
-                var playerDirection = Game.Instance.Player.Direction;
+                var playerDirection = player.Direction;
                 var angle = playerDirection - fov * 0.5f + fov * i / windowWidth;
                 for (float rayLength = 0; rayLength < rayNum; rayLength += rayStep)
                 {
-                    var playerPosition = Game.Instance.Player.Position;
+                    var playerPosition = player.Position;
                     var cx = (uint)(playerPosition.X + rayLength * MathF.Cos(angle));
                     var cy = (uint)(playerPosition.Y + rayLength * MathF.Sin(angle));
                     var pix_x = cx * rect_w;
@@ -45,13 +53,18 @@ namespace WolfRender
                     {
                         var dist = rayLength * Math.Cos(angle - playerDirection);
                         var columnHeight = Math.Min(2000, windowHeight / dist);
-                        // var columnHeight = windowHeight / (rayLength * Math.Cos(angle - playerDirection));
                         var color = Tools.PackColor((byte)(255 - Math.Clamp(rayLength * rayLength, 10, 255)), 0, 0);
                         drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
                         break;
                     }
                 }
             }
+
+            var bytes = new byte[windowWidth * windowHeight * 4];
+            Buffer.BlockCopy(pixels, 0, bytes, 0, bytes.Length);
+            texture.Update(bytes);
+            var sprite = new Sprite(texture);
+            target.Draw(sprite, states);
         }
 
         protected override void OnUpdate(float time)
