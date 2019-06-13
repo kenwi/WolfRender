@@ -6,5 +6,6 @@ namespace WolfRender
     {
         public Vector2f Position { get; set; }
         public float Direction { get; set; }
+        public float Fov { get; set; }
     }
 }
