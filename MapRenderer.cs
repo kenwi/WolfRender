@@ -20,13 +20,13 @@ namespace WolfRender
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            float fov = Game.Instance.Player.Fov;
-            uint windowWidth = Game.Instance.Window.Size.X;
-            uint windowHeight = Game.Instance.Window.Size.Y;
-            uint mapSizeX = map.Size.X;
-            uint mapSizeY = map.Size.Y;
-            uint rect_w = windowWidth / mapSizeX;
-            uint rect_h = windowHeight / mapSizeY;
+            var fov = Game.Instance.Player.Fov;
+            var windowWidth = Game.Instance.Window.Size.X;
+            var windowHeight = Game.Instance.Window.Size.Y;
+            var mapSizeX = map.Size.X;
+            var mapSizeY = map.Size.Y;
+            var rect_w = windowWidth / mapSizeX;
+            var rect_h = windowHeight / mapSizeY;
 
             var rect = new Vector2f(windowWidth / mapSizeX, windowHeight / mapSizeY);
             for (int i = 0; i < windowWidth; i++)
@@ -36,10 +36,10 @@ namespace WolfRender
                 for (float rayLength = 0; rayLength < rayNum; rayLength += rayStep)
                 {
                     var playerPosition = Game.Instance.Player.Position;
-                    uint cx = (uint)(playerPosition.X + rayLength * MathF.Cos(angle));
-                    uint cy = (uint)(playerPosition.Y + rayLength * MathF.Sin(angle));
-                    uint pix_x = cx * rect_w;
-                    uint pix_y = cy * rect_h;
+                    var cx = (uint)(playerPosition.X + rayLength * MathF.Cos(angle));
+                    var cy = (uint)(playerPosition.Y + rayLength * MathF.Sin(angle));
+                    var pix_x = cx * rect_w;
+                    var pix_y = cy * rect_h;
 
                     if (map.Data[cx + cy * mapSizeX] != 0)
                     {
@@ -61,8 +61,8 @@ namespace WolfRender
 
         void drawRectangle(int[] img, uint width, uint height, int x, int y, int w, int h, int color)
         {
-            uint windowWidth = Game.Instance.Window.Size.X;
-            uint windowHeight = Game.Instance.Window.Size.Y;
+            var windowWidth = Game.Instance.Window.Size.X;
+            var windowHeight = Game.Instance.Window.Size.Y;
 
             if (h > windowHeight || w > windowWidth)
                 return;
