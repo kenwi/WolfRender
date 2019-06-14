@@ -15,26 +15,25 @@ namespace WolfRender
             var playerPosition = Game.Instance.Player.Position;
             var playerDirection = Game.Instance.Player.Direction;
             var fov = Game.Instance.Player.Fov;
+            var rotationSpeed = Tools.DegToRad(100);
 
-            var rotationSpeed = 3.1415f / 180 * 100;
             if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
             {
                 playerDirection -= rotationSpeed * dt;
             }
-
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
             {
                 playerDirection += rotationSpeed * dt;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
             {
-                playerPosition.X += 1 * (float)Math.Cos(playerDirection) * dt;
-                playerPosition.Y += 1 * (float)Math.Sin(playerDirection) * dt;
+                playerPosition.X += MathF.Cos(playerDirection) * dt;
+                playerPosition.Y += MathF.Sin(playerDirection) * dt;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
             {
-                playerPosition.X -= 1 * (float)Math.Cos(playerDirection) * dt;
-                playerPosition.Y -= 1 * (float)Math.Sin(playerDirection) * dt;
+                playerPosition.X -= MathF.Cos(playerDirection) * dt;
+                playerPosition.Y -= MathF.Sin(playerDirection) * dt;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.PageUp))
             {
@@ -44,13 +43,13 @@ namespace WolfRender
             {
                 fov -= dt;
             }
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
+            {
+                Game.Instance.Window.Close();
+            }
             Game.Instance.Player.Position = playerPosition;
             Game.Instance.Player.Direction = playerDirection;
             Game.Instance.Player.Fov = fov;
-
-            if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
-                Game.Instance.Window.Close();
-            
             Game.Instance.Window.DispatchEvents();
         }
     }

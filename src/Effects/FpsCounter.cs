@@ -23,7 +23,7 @@ namespace WolfRender
         {
             var text = new Text(content, font)
             {
-                // FillColor = Color.Black,
+                FillColor = Color.Green,
                 Position = position,
                 CharacterSize = size
             };

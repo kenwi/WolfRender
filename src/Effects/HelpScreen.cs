@@ -17,7 +17,7 @@ namespace WolfRender
             clock = new Clock();
             font = new Font("cour.ttf");
             text = new Text("[Up/Down] Move Forward/Backward\n[Left/Right] Rotate Left/Right\n[Page Up/Down] Adjust FOV\n[Escape] Quit", font, 15);
-            text.FillColor = Color.Black;
+            text.FillColor = Color.Green;
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
