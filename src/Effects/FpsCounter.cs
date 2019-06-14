@@ -46,7 +46,7 @@ namespace WolfRender
                 var fps = numFrames / timeSinceLastUpdate.AsSeconds();
                 timeSinceLastUpdate = Time.Zero;
                 numFrames = 0;
-                setText($"FPS: {fps:0.#}", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
+                setText($"[ {fps:0.#} FPS / {Game.Instance.DeltaTime:0.#######} ms ]", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
             }
         }
     }
