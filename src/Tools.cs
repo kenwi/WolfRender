@@ -4,7 +4,8 @@ namespace WolfRender
 {
     public static class Tools
     {
-        public static float DegToRad(float radians) => radians * 0.01745329f;
+        private static float PI_OVER_180 = MathF.PI / 180;
+        public static float DegToRad(float radians) => radians * PI_OVER_180;
 
         public static int PackColor(byte r, byte g, byte b, byte a = 255)
         {
