@@ -4,7 +4,7 @@ using SFML.Window;
 
 namespace WolfRender
 {
-    public class InputHandler : Singleton<InputHandler>
+    public class Input : Singleton<Input>
     {
         public void Init()
         {

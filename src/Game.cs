@@ -48,7 +48,7 @@ namespace WolfRender
             {
                 DeltaTime = gameTime.Restart().AsSeconds();                
                 window.DispatchEvents();                
-                InputHandler.Instance.Update(DeltaTime);
+                Input.Instance.Update(DeltaTime);
                 Update(DeltaTime);
                 Render();
             }
