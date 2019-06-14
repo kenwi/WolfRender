@@ -9,11 +9,10 @@ namespace WolfRender
         Map map;
         Player player;
         Vector2u cellSize;
-        uint rayNum = 20;
-        float rayStep = 0.01f;
-        int[] pixels;
-
         Texture texture;
+        uint rayNum = 20;
+        float rayStep = 0.05f;
+        int[] pixels;
 
         public MapRenderer(Map map, Player player) : base("MapRenderer")
         {
@@ -23,7 +22,6 @@ namespace WolfRender
             var windowHeight = Game.Instance.Window.Size.Y;
             texture = new Texture(windowWidth, windowHeight);
             cellSize = new Vector2u(windowWidth / map.Size.X, windowHeight / map.Size.Y);
-            pixels = new int[windowWidth * windowHeight];
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
@@ -35,6 +33,7 @@ namespace WolfRender
             var mapSizeY = map.Size.Y;
             var rect_w = windowWidth / mapSizeX;
             var rect_h = windowHeight / mapSizeY;
+            pixels = new int[windowWidth * windowHeight];
 
             var rect = new Vector2f(windowWidth / mapSizeX, windowHeight / mapSizeY);
             for (int i = 0; i < windowWidth; i++)
