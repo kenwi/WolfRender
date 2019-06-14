@@ -36,17 +36,14 @@ namespace WolfRender
                 var angle = player.Direction - player.Fov * 0.5f + player.Fov * i / windowWidth;
                 for (float rayLength = 0; rayLength < rayNum; rayLength += rayStep)
                 {
-                    var playerPosition = player.Position;
-                    var cx = (uint)(playerPosition.X + rayLength * MathF.Cos(angle));
-                    var cy = (uint)(playerPosition.Y + rayLength * MathF.Sin(angle));
-                    var pix_x = cx * rect.X;
-                    var pix_y = cy * rect.Y;
+                    var cx = (uint)(player.Position.X + rayLength * MathF.Cos(angle));
+                    var cy = (uint)(player.Position.Y + rayLength * MathF.Sin(angle));
                     if (map.Data[cx + cy * map.Size.X] != 0)
                     {
                         var dist = rayLength * Math.Cos(angle - player.Direction);
-                        var columnHeight = Math.Min(2000, windowHeight / dist);
+                        var columnHeight = (int)Math.Min(2000, windowHeight / dist);
                         var color = Tools.PackColor((byte)(255 - Math.Clamp(rayLength * rayLength, 10, 255)), 0, 0);
-                        drawRectangle(i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
+                        drawRectangle(i, (int)windowHeight / 2 - columnHeight / 2, 1, columnHeight, color);
                         break;
                     }
                 }
@@ -64,17 +61,17 @@ namespace WolfRender
 
         }
 
-        void drawRectangle(int x, int y, int width, int height, int color)
+        void drawRectangle(int x, int y, int w, int h, int color)
         {
             var windowWidth = Game.Instance.Window.Size.X;
             var windowHeight = Game.Instance.Window.Size.Y;
 
-            if (height > windowHeight || width > windowWidth)
+            if (h > windowHeight || w > windowWidth)
                 return;
 
-            for (int i = 0; i < width; i++)
+            for (int i = 0; i < w; i++)
             {
-                for (int j = 0; j < height; j++)
+                for (int j = 0; j < h; j++)
                 {
                     var cx = x + i;
                     var cy = y + j;
