@@ -13,13 +13,17 @@ namespace WolfRender
         Clock gameTime;
         Time previousTime;
         RenderWindow window;
+        float deltaTime;
 
         public RenderWindow Window { get => window; private set => window = value; }
         public Vector2f MousePositionNormalized { get => new Vector2f((float)Mouse.GetPosition(window).X / window.Size.X, (float)Mouse.GetPosition(window).Y / window.Size.Y); }
         public Random Random { get; private set; }
-        public float DeltaTime { get; private set; }
+        public float DeltaTime { get => deltaTime; set => deltaTime = value; }
         public Clock GameTime { get => gameTime; }
         public Player Player { get => player; set => player = value; }
+
+        public bool HelpMenuVisible { get; set; }
+        public bool FramerateLimited { get; set; }
 
         public void Init(uint width, uint height)
         {
@@ -46,10 +50,10 @@ namespace WolfRender
         {
             while (window.IsOpen)
             {
-                DeltaTime = gameTime.Restart().AsSeconds();                
-                window.DispatchEvents();                
-                Input.Instance.Update(DeltaTime);
-                Update(DeltaTime);
+                deltaTime = gameTime.Restart().AsSeconds();
+                window.DispatchEvents();
+                Input.Instance.Update(deltaTime);
+                Update(deltaTime);
                 Render();
             }
         }

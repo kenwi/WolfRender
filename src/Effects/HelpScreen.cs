@@ -10,19 +10,25 @@ namespace WolfRender
         Font font;
         Clock clock;
         int duration = 5;
-        public bool Visible { get; set; } = true;
 
         public HelpScreen() : base("HelpScreen")
         {
             clock = new Clock();
             font = new Font("cour.ttf");
-            text = new Text("[Up/Down] Move Forward/Backward\n[Left/Right] Rotate Left/Right\n[Page Up/Down] Adjust FOV\n[Escape] Quit", font, 15);
+            text = new Text("", font, 15);
+            text.DisplayedString += $"[Up/Down] Move Forward/Backward\n";
+            text.DisplayedString += $"[Left/Right] Rotate Left/Right\n";
+            text.DisplayedString += $"[Page Up/Down] Adjust FOV\n";
+            text.DisplayedString += $"[L] Toggle Framerate Limiting\n";
+            text.DisplayedString += $"[H] Toggle Help\n";
+            text.DisplayedString += $"[Escape] Quit\n";
             text.FillColor = Color.Green;
+            Game.Instance.HelpMenuVisible = true;
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            if (Visible)
+            if (Game.Instance.HelpMenuVisible)
             {
                 target.Draw(text, states);
             }
@@ -32,7 +38,7 @@ namespace WolfRender
         {
             if (clock?.ElapsedTime.AsSeconds() > duration)
             {
-                Visible = false;
+                Game.Instance.HelpMenuVisible = false;
                 clock = null;
             }
         }

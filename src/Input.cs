@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SFML.System;
 using SFML.Window;
 
@@ -6,6 +7,8 @@ namespace WolfRender
 {
     public class Input : Singleton<Input>
     {
+        List<Keyboard.Key> keydown = new List<Keyboard.Key>();
+
         public void Init()
         {
             Game.Instance.Window.Closed += (s, e) => Game.Instance.Window.Close();
@@ -47,6 +50,31 @@ namespace WolfRender
             if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
             {
                 Game.Instance.Window.Close();
+            }
+            if (Keyboard.IsKeyPressed(Keyboard.Key.H))
+            {
+                if (!keydown.Contains(Keyboard.Key.H))
+                {
+                    Game.Instance.HelpMenuVisible = !Game.Instance.HelpMenuVisible;
+                    keydown.Add(Keyboard.Key.H);
+                }
+            }
+            else
+            {
+                keydown.Remove(Keyboard.Key.H);
+            }
+
+            if (Keyboard.IsKeyPressed(Keyboard.Key.L))
+            {
+                if (!keydown.Contains(Keyboard.Key.L))
+                {
+                    Game.Instance.FramerateLimited = !Game.Instance.FramerateLimited;
+                    keydown.Add(Keyboard.Key.L);
+                }
+            }
+            else
+            {
+                keydown.Remove(Keyboard.Key.L);
             }
         }
     }
