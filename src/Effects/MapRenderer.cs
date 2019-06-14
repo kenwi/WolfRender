@@ -26,34 +26,27 @@ namespace WolfRender
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            var fov = player.Fov;
             var windowWidth = Game.Instance.Window.Size.X;
             var windowHeight = Game.Instance.Window.Size.Y;
-            var mapSizeX = map.Size.X;
-            var mapSizeY = map.Size.Y;
-            var rect_w = windowWidth / mapSizeX;
-            var rect_h = windowHeight / mapSizeY;
             pixels = new int[windowWidth * windowHeight];
 
-            var rect = new Vector2f(windowWidth / mapSizeX, windowHeight / mapSizeY);
+            var rect = new Vector2f(windowWidth / map.Size.X, windowHeight / map.Size.Y);
             for (int i = 0; i < windowWidth; i++)
             {
-                var playerDirection = player.Direction;
-                var angle = playerDirection - fov * 0.5f + fov * i / windowWidth;
+                var angle = player.Direction - player.Fov * 0.5f + player.Fov * i / windowWidth;
                 for (float rayLength = 0; rayLength < rayNum; rayLength += rayStep)
                 {
                     var playerPosition = player.Position;
                     var cx = (uint)(playerPosition.X + rayLength * MathF.Cos(angle));
                     var cy = (uint)(playerPosition.Y + rayLength * MathF.Sin(angle));
-                    var pix_x = cx * rect_w;
-                    var pix_y = cy * rect_h;
-
-                    if (map.Data[cx + cy * mapSizeX] != 0)
+                    var pix_x = cx * rect.X;
+                    var pix_y = cy * rect.Y;
+                    if (map.Data[cx + cy * map.Size.X] != 0)
                     {
-                        var dist = rayLength * Math.Cos(angle - playerDirection);
+                        var dist = rayLength * Math.Cos(angle - player.Direction);
                         var columnHeight = Math.Min(2000, windowHeight / dist);
                         var color = Tools.PackColor((byte)(255 - Math.Clamp(rayLength * rayLength, 10, 255)), 0, 0);
-                        drawRectangle(pixels, windowWidth, windowHeight, i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
+                        drawRectangle(i, (int)(windowHeight / 2 - columnHeight / 2), 1, (int)columnHeight, color);
                         break;
                     }
                 }
@@ -71,22 +64,22 @@ namespace WolfRender
 
         }
 
-        void drawRectangle(int[] img, uint width, uint height, int x, int y, int w, int h, int color)
+        void drawRectangle(int x, int y, int width, int height, int color)
         {
             var windowWidth = Game.Instance.Window.Size.X;
             var windowHeight = Game.Instance.Window.Size.Y;
 
-            if (h > windowHeight || w > windowWidth)
+            if (height > windowHeight || width > windowWidth)
                 return;
 
-            for (int i = 0; i < w; i++)
+            for (int i = 0; i < width; i++)
             {
-                for (int j = 0; j < h; j++)
+                for (int j = 0; j < height; j++)
                 {
                     var cx = x + i;
                     var cy = y + j;
-                    var index = cx + cy * width;
-                    img[index] = color;
+                    var index = cx + cy * windowWidth;
+                    pixels[index] = color;
                 }
             }
         }
