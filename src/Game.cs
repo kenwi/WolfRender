@@ -17,9 +17,9 @@ namespace WolfRender
         public RenderWindow Window { get => window; private set => window = value; }
         public Vector2f MousePositionNormalized { get => new Vector2f((float)Mouse.GetPosition(window).X / window.Size.X, (float)Mouse.GetPosition(window).Y / window.Size.Y); }
         public Random Random { get; private set; }
-        public float DeltaTime { get => gameTime.Restart().AsSeconds(); }
+        public float DeltaTime { get; private set; }
         public Clock GameTime { get => gameTime; }
-        public Player Player {get => player; set => player = value; }
+        public Player Player { get => player; set => player = value; }
 
         public void Init(uint width, uint height)
         {
@@ -42,11 +42,25 @@ namespace WolfRender
             };
         }
 
+        public void Run()
+        {
+            while (window.IsOpen)
+            {
+                DeltaTime = gameTime.Restart().AsSeconds();                
+                window.DispatchEvents();                
+                InputHandler.Instance.Update(DeltaTime);
+                Update(DeltaTime);
+                Render();
+            }
+        }
+
         public void Render()
         {
             window.Clear();
             foreach (var effect in effects)
+            {
                 window.Draw(effect);
+            }
             window.Display();
         }
 

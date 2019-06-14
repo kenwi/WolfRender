@@ -48,7 +48,6 @@ namespace WolfRender
             {
                 Game.Instance.Window.Close();
             }
-            Game.Instance.Window.DispatchEvents();
         }
     }
 }
