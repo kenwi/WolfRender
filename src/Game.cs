@@ -19,7 +19,7 @@ namespace WolfRender
         public Random Random { get; private set; }
         public float DeltaTime { get => gameTime.Restart().AsSeconds(); }
         public Clock GameTime { get => gameTime; }
-        public Player Player => player;
+        public Player Player {get => player; set => player = value; }
 
         public void Init(uint width, uint height)
         {
