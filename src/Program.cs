@@ -1,17 +1,14 @@
-﻿using System;
-using SFML.System;
-
-namespace WolfRender
+﻿namespace WolfRender
 {
     class Program
     {
         static void Main(string[] args)
         {
-            bool limited = true;
+            bool limited = false;
             int targetfps = 60;
             float targetUpdateRate = 1f / targetfps;
 
-            Game.Instance.Init(800, 800);
+            Game.Instance.Init(1200, 800);
             InputHandler.Instance.Init();
             while (Game.Instance.Window.IsOpen)
             {

@@ -32,6 +32,9 @@ namespace WolfRender
             player = new Player();
             player.Fov = MathF.PI * 0.5f;
             player.Position = new Vector2f(map.Size.X / 4, map.Size.Y / 4);
+            player.RotationSpeed = Tools.DegToRad(100);
+            player.MovementSpeed = 2;
+
             effects = new Effect[]{
                 new MapRenderer(map, player)
                 , new HelpScreen()

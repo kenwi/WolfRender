@@ -15,7 +15,8 @@ namespace WolfRender
             var playerPosition = Game.Instance.Player.Position;
             var playerDirection = Game.Instance.Player.Direction;
             var fov = Game.Instance.Player.Fov;
-            var rotationSpeed = Tools.DegToRad(100);
+            var rotationSpeed = Game.Instance.Player.RotationSpeed;
+            var movementSpeed = Game.Instance.Player.MovementSpeed;
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
             {
@@ -27,13 +28,13 @@ namespace WolfRender
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
             {
-                playerPosition.X += MathF.Cos(playerDirection) * dt;
-                playerPosition.Y += MathF.Sin(playerDirection) * dt;
+                playerPosition.X += movementSpeed * MathF.Cos(playerDirection) * dt;
+                playerPosition.Y += movementSpeed * MathF.Sin(playerDirection) * dt;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
             {
-                playerPosition.X -= MathF.Cos(playerDirection) * dt;
-                playerPosition.Y -= MathF.Sin(playerDirection) * dt;
+                playerPosition.X -= movementSpeed * MathF.Cos(playerDirection) * dt;
+                playerPosition.Y -= movementSpeed * MathF.Sin(playerDirection) * dt;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.PageUp))
             {
