@@ -8,7 +8,7 @@
             int targetfps = 60;
             float targetUpdateRate = 1f / targetfps;
 
-            Game.Instance.Init(1200, 800);
+            Game.Instance.Init(1000, 700);
             InputHandler.Instance.Init();
             while (Game.Instance.Window.IsOpen)
             {
