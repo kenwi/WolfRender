@@ -4,7 +4,7 @@ using SFML.Window;
 
 namespace WolfRender
 {
-    public class HelpScreenEffect : Effect
+    public class HelpScreen : Effect
     {
         Text text;
         Font font;
@@ -12,7 +12,7 @@ namespace WolfRender
         int duration = 5;
         public bool Visible { get; set; } = true;
 
-        public HelpScreenEffect() : base("HelpScreenEffect")
+        public HelpScreen() : base("HelpScreen")
         {
             clock = new Clock();
             font = new Font("cour.ttf");

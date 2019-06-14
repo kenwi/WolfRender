@@ -36,8 +36,8 @@ namespace WolfRender
             player.Position = new Vector2f(map.Size.X / 4, map.Size.Y / 4);
             effects = new Effect[]{
                 new MapRenderer(map, player)
-                , new HelpScreenEffect()
-                , new FpsCounterEffect()
+                , new HelpScreen()
+                , new FpsCounter()
             };
         }
 

@@ -3,7 +3,7 @@ using SFML.System;
 
 namespace WolfRender
 {
-    public class FpsCounterEffect : Effect
+    public class FpsCounter : Effect
     {
         int numFrames;
         uint characterSize = 15;
@@ -15,7 +15,7 @@ namespace WolfRender
         Time timeSinceLastUpdate = Time.Zero;
         Clock clock = new Clock();
 
-        public FpsCounterEffect() : base("FpsCounterEffect")
+        public FpsCounter() : base("FpsCounterEffect")
         {
         }
 
@@ -23,7 +23,7 @@ namespace WolfRender
         {
             var text = new Text(content, font)
             {
-                FillColor = Color.Black,
+                // FillColor = Color.Black,
                 Position = position,
                 CharacterSize = size
             };
