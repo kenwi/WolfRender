@@ -7,10 +7,12 @@ namespace WolfRender
 {
     public class Game : Singleton<Game>
     {
+        Map map;
+        Player player;
         static Effect[] effects;
         Clock gameTime;
-        Time previousTime;
         RenderWindow window;
+        Time previousTime;
 
         public RenderWindow Window { get => window; private set => window = value; }
         public Vector2f MousePositionNormalized { get => new Vector2f((float)Mouse.GetPosition(window).X / window.Size.X, (float)Mouse.GetPosition(window).Y / window.Size.Y); }
@@ -19,7 +21,7 @@ namespace WolfRender
         public bool ShowHelpScreen { get; set; }
         public int FrameNumber { get; set; }
         public float DeltaTime { get => calculateDt(); }
-        public Player Player { get; set; }
+        public Player Player => player;
 
         public void Init(uint width, uint height)
         {
@@ -28,9 +30,12 @@ namespace WolfRender
             previousTime = gameTime.ElapsedTime;
 
             window = new RenderWindow(new VideoMode(width, height, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
-            Player = new Player();
+            map = new Map();
+            player = new Player();
+            player.Fov = MathF.PI * 0.5f;
+            player.Position = new Vector2f(map.Size.X / 4, map.Size.Y / 4);
             effects = new Effect[]{
-                new MapEffect()
+                new MapRenderer(map, player)
                 , new HelpScreenEffect()
                 , new FpsCounterEffect()
             };
