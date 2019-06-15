@@ -25,6 +25,12 @@ namespace WolfRender
             PlayerMovement(dt, player);
             PlayerRotation(dt, player);
         }
+        
+        private static void addMovement(float dt, Player player, float playerDirection)
+        {
+            player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, 
+                                            player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+        }
 
         private void PlayerOptions(float dt, Player player)
         {
@@ -88,26 +94,26 @@ namespace WolfRender
             float playerDirection = player.Direction;
             if (Keyboard.IsKeyPressed(Keyboard.Key.A))
             {
-                playerDirection = player.Direction - MathF.PI / 2;
-                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+                playerDirection = player.Direction - MathF.PI * 0.5f;
+                addMovement(dt, player, playerDirection);
             }
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.D))
             {
-                playerDirection = player.Direction + MathF.PI / 2;
-                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+                playerDirection = player.Direction + MathF.PI * 0.5f;
+                addMovement(dt, player, playerDirection);
             }
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.W))
             {
                 playerDirection = player.Direction;
-                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+                addMovement(dt, player, playerDirection);
             }
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.S))
             {
                 playerDirection = player.Direction + MathF.PI;
-                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+                addMovement(dt, player, playerDirection);
             }
         }
 
