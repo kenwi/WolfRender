@@ -114,35 +114,35 @@ namespace WolfRender
         {
             var mousePosition = Mouse.GetPosition();
             var mouseDelta = mousePosition - previousMousePosition;
-            if (MathF.Sqrt(mouseDelta.X * mouseDelta.X + mouseDelta.Y * mouseDelta.Y) > 0)
+            if (MathF.Sqrt(mouseDelta.X * mouseDelta.X) > 0)
             {
                 player.Direction += player.RotationSpeed * mouseRotationMultiplier * mouseDelta.X * dt;
             }
 
             if (!Game.Instance.MouseVisible)
             {
-                if (mousePosition.X + 50 > Game.Instance.Window.Size.X + Game.Instance.Window.Position.X)
+                if (mousePosition.X> Game.Instance.Window.Size.X + Game.Instance.Window.Position.X)
                 {
                     mousePosition.X -= (int)Game.Instance.Window.Size.X / 2;
                     var position = new Vector2i(mousePosition.X, mousePosition.Y);
                     previousMousePosition = position;
                     Mouse.SetPosition(position);
                 }
-                if (mousePosition.X - 50 <= Game.Instance.Window.Position.X)
+                if (mousePosition.X<= Game.Instance.Window.Position.X)
                 {
                     mousePosition.X += (int)Game.Instance.Window.Size.X / 2;
                     var position = new Vector2i(mousePosition.X, mousePosition.Y);
                     previousMousePosition = position;
                     Mouse.SetPosition(position);
                 }
-                if (mousePosition.Y + 50 > Game.Instance.Window.Size.Y + Game.Instance.Window.Position.Y)
+                if (mousePosition.Y> Game.Instance.Window.Size.Y + Game.Instance.Window.Position.Y)
                 {
                     mousePosition.Y -= (int)Game.Instance.Window.Size.Y / 2;
                     var position = new Vector2i(mousePosition.X, mousePosition.Y);
                     previousMousePosition = position;
                     Mouse.SetPosition(position);
                 }
-                if (mousePosition.Y - 50 <= Game.Instance.Window.Position.Y)
+                if (mousePosition.Y<= Game.Instance.Window.Position.Y)
                 {
                     mousePosition.Y += (int)Game.Instance.Window.Size.Y / 2;
                     var position = new Vector2i(mousePosition.X, mousePosition.Y);
