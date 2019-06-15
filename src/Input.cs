@@ -13,8 +13,7 @@ namespace WolfRender
 
         public void Init()
         {
-            // Game.Instance.Window.SetMouseCursorGrabbed(true);
-            // Game.Instance.Window.SetMouseCursorVisible(false);
+            Game.Instance.Window.SetMouseCursorVisible(false);
             Game.Instance.Window.Closed += (s, e) => Game.Instance.Window.Close();
         }
 
@@ -88,21 +87,48 @@ namespace WolfRender
                 keydown.Remove(Keyboard.Key.L);
             }
 
+            if (Keyboard.IsKeyPressed(Keyboard.Key.M))
+            {
+                if (!keydown.Contains(Keyboard.Key.M))
+                {
+                    Game.Instance.MouseVisible = !Game.Instance.MouseVisible;
+                    keydown.Add(Keyboard.Key.M);
+                }
+            }
+            else
+            {
+                keydown.Remove(Keyboard.Key.M);
+            }
+
             var mousePosition = Mouse.GetPosition();
             var mouseDelta = mousePosition - previousMousePosition;
             if (MathF.Sqrt(mouseDelta.X * mouseDelta.X + mouseDelta.Y * mouseDelta.Y) > 0)
             {
                 player.Direction += player.RotationSpeed * mouseRotationMultiplier * mouseDelta.X * dt;
             }
-            if (mousePosition.X + 50 > Game.Instance.Window.Size.X + Game.Instance.Window.Position.X)
+
+            if (!Game.Instance.MouseVisible)
             {
-                mousePosition.X -= (int)Game.Instance.Window.Size.X / 2;
-                Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
-            }
-            if (mousePosition.X - 50 <= Game.Instance.Window.Position.X)
-            {
-                mousePosition.X += (int)Game.Instance.Window.Size.X / 2;
-                Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                if (mousePosition.X + 50 > Game.Instance.Window.Size.X + Game.Instance.Window.Position.X)
+                {
+                    mousePosition.X -= (int)Game.Instance.Window.Size.X / 2;
+                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                }
+                if (mousePosition.X - 50 <= Game.Instance.Window.Position.X)
+                {
+                    mousePosition.X += (int)Game.Instance.Window.Size.X / 2;
+                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                }
+                if (mousePosition.Y + 50 > Game.Instance.Window.Size.Y + Game.Instance.Window.Position.Y)
+                {
+                    mousePosition.Y -= (int)Game.Instance.Window.Size.Y / 2;
+                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                }
+                if (mousePosition.Y - 50 <= Game.Instance.Window.Position.Y)
+                {
+                    mousePosition.Y += (int)Game.Instance.Window.Size.Y / 2;
+                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                }
             }
             previousMousePosition = mousePosition;
         }

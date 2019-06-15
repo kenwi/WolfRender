@@ -14,6 +14,7 @@ namespace WolfRender
         Time previousTime;
         RenderWindow window;
         float deltaTime;
+        bool mouseVisible;
 
         public RenderWindow Window { get => window; private set => window = value; }
         public Vector2f MousePositionNormalized { get => new Vector2f((float)Mouse.GetPosition(window).X / window.Size.X, (float)Mouse.GetPosition(window).Y / window.Size.Y); }
@@ -24,6 +25,15 @@ namespace WolfRender
 
         public bool HelpMenuVisible { get; set; }
         public bool FramerateLimited { get; set; }
+        public bool MouseVisible
+        {
+            get => mouseVisible;
+            set
+            {
+                Window.SetMouseCursorVisible(value);
+                mouseVisible = value;
+            }
+        }
 
         public void Init(uint width, uint height)
         {
