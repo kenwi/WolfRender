@@ -20,32 +20,13 @@ namespace WolfRender
         public void Update(float dt)
         {
             var player = Game.Instance.Player;
-            if (Keyboard.IsKeyPressed(Keyboard.Key.A))
-            {
-                player.Direction -= player.RotationSpeed * dt;
-            }
+            PlayerOptions(dt, player);
+            PlayerMovement(dt, player);
+            PlayerRotation(dt, player);
+        }
 
-            if (Keyboard.IsKeyPressed(Keyboard.Key.D))
-            {
-                player.Direction += player.RotationSpeed * dt;
-            }
-
-            if (Keyboard.IsKeyPressed(Keyboard.Key.W))
-            {
-                var movementSpeed = player.MovementSpeed;
-                var playerDirection = player.Direction;
-                var position = new Vector2f(movementSpeed * MathF.Cos(playerDirection) * dt, movementSpeed * MathF.Sin(playerDirection) * dt);
-                player.Position += position;
-            }
-
-            if (Keyboard.IsKeyPressed(Keyboard.Key.S))
-            {
-                var movementSpeed = player.MovementSpeed;
-                var playerDirection = player.Direction;
-                var position = new Vector2f(movementSpeed * MathF.Cos(playerDirection) * dt, movementSpeed * MathF.Sin(playerDirection) * dt);
-                player.Position -= position;
-            }
-
+        private void PlayerOptions(float dt, Player player)
+        {
             if (Keyboard.IsKeyPressed(Keyboard.Key.PageUp))
             {
                 player.Fov += dt;
@@ -99,7 +80,38 @@ namespace WolfRender
             {
                 keydown.Remove(Keyboard.Key.M);
             }
+        }
 
+        private static void PlayerMovement(float dt, Player player)
+        {
+            float playerDirection = player.Direction;
+            if (Keyboard.IsKeyPressed(Keyboard.Key.A))
+            {
+                playerDirection = player.Direction - MathF.PI / 2;
+                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+            }
+
+            if (Keyboard.IsKeyPressed(Keyboard.Key.D))
+            {
+                playerDirection = player.Direction + MathF.PI / 2;
+                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+            }
+
+            if (Keyboard.IsKeyPressed(Keyboard.Key.W))
+            {
+                playerDirection = player.Direction;
+                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+            }
+
+            if (Keyboard.IsKeyPressed(Keyboard.Key.S))
+            {
+                playerDirection = player.Direction + MathF.PI;
+                player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+            }
+        }
+
+        private void PlayerRotation(float dt, Player player)
+        {
             var mousePosition = Mouse.GetPosition();
             var mouseDelta = mousePosition - previousMousePosition;
             if (MathF.Sqrt(mouseDelta.X * mouseDelta.X + mouseDelta.Y * mouseDelta.Y) > 0)
@@ -112,22 +124,30 @@ namespace WolfRender
                 if (mousePosition.X + 50 > Game.Instance.Window.Size.X + Game.Instance.Window.Position.X)
                 {
                     mousePosition.X -= (int)Game.Instance.Window.Size.X / 2;
-                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                    var position = new Vector2i(mousePosition.X, mousePosition.Y);
+                    previousMousePosition = position;
+                    Mouse.SetPosition(position);
                 }
                 if (mousePosition.X - 50 <= Game.Instance.Window.Position.X)
                 {
                     mousePosition.X += (int)Game.Instance.Window.Size.X / 2;
-                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                    var position = new Vector2i(mousePosition.X, mousePosition.Y);
+                    previousMousePosition = position;
+                    Mouse.SetPosition(position);
                 }
                 if (mousePosition.Y + 50 > Game.Instance.Window.Size.Y + Game.Instance.Window.Position.Y)
                 {
                     mousePosition.Y -= (int)Game.Instance.Window.Size.Y / 2;
-                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                    var position = new Vector2i(mousePosition.X, mousePosition.Y);
+                    previousMousePosition = position;
+                    Mouse.SetPosition(position);
                 }
                 if (mousePosition.Y - 50 <= Game.Instance.Window.Position.Y)
                 {
                     mousePosition.Y += (int)Game.Instance.Window.Size.Y / 2;
-                    Mouse.SetPosition(new Vector2i(mousePosition.X, mousePosition.Y));
+                    var position = new Vector2i(mousePosition.X, mousePosition.Y);
+                    previousMousePosition = position;
+                    Mouse.SetPosition(position);
                 }
             }
             previousMousePosition = mousePosition;
