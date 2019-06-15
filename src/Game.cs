@@ -14,7 +14,9 @@ namespace WolfRender
         Time previousTime;
         RenderWindow window;
         float deltaTime;
+        float targetFps;
         bool mouseVisible;
+        bool limited;
 
         public RenderWindow Window { get => window; private set => window = value; }
         public Vector2f MousePositionNormalized { get => new Vector2f((float)Mouse.GetPosition(window).X / window.Size.X, (float)Mouse.GetPosition(window).Y / window.Size.Y); }
@@ -22,9 +24,9 @@ namespace WolfRender
         public float DeltaTime { get => deltaTime; set => deltaTime = value; }
         public Clock GameTime { get => gameTime; }
         public Player Player { get => player; set => player = value; }
-
+        public float TargetFPS { get => targetFps; }
         public bool HelpMenuVisible { get; set; }
-        public bool FramerateLimited { get; set; }
+        public bool FramerateLimited { get => limited; set => limited = value; }
         public bool MouseVisible
         {
             get => mouseVisible;
@@ -35,12 +37,12 @@ namespace WolfRender
             }
         }
 
-        public void Init(uint width, uint height)
+        public void Init(uint width, uint height, int targetFps = 60, bool limitFrameRate = false)
         {
+            this.targetFps = targetFps;
             Random = new Random();
             gameTime = new Clock();
             previousTime = gameTime.ElapsedTime;
-
             window = new RenderWindow(new VideoMode(width, height, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
             map = new Map();
             player = new Player();
@@ -48,6 +50,7 @@ namespace WolfRender
             player.Position = new Vector2f(map.Size.X / 4, map.Size.Y / 4);
             player.RotationSpeed = Tools.DegToRad(100);
             player.MovementSpeed = 2;
+            limited = limitFrameRate;
 
             effects = new Effect[]{
                 new MapRenderer(map, player)
@@ -61,6 +64,13 @@ namespace WolfRender
             while (window.IsOpen)
             {
                 deltaTime = gameTime.Restart().AsSeconds();
+                if (limited)
+                {
+                    while (deltaTime < 1f / targetFps)
+                    {
+                        deltaTime += gameTime.Restart().AsSeconds();
+                    }
+                }
                 window.DispatchEvents();
                 Input.Instance.Update(deltaTime);
                 Update(deltaTime);

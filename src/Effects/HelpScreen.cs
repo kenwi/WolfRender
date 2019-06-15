@@ -18,7 +18,7 @@ namespace WolfRender
             text = new Text("", font, 15);
             text.DisplayedString += $"[H] Toggle Help\n";
             text.DisplayedString += $"[M] Toggle Mouse\n";
-            // text.DisplayedString += $"[L] Toggle Framerate Limiting\n";
+            text.DisplayedString += $"[L] Toggle Framerate Limiting\n";
             text.DisplayedString += $"[Page Up/Down] Adjust FOV\n";
             text.DisplayedString += $"[WASD] Movement\n";
             text.DisplayedString += $"[Left/Right] Rotation\n";

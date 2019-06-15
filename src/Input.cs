@@ -9,11 +9,11 @@ namespace WolfRender
     {
         List<Keyboard.Key> keydown = new List<Keyboard.Key>();
         Vector2i previousMousePosition = Mouse.GetPosition();
-        float mouseRotationMultiplier = 0.2f;
+        float mouseRotationMultiplier = 0.1f;
 
         public void Init()
         {
-            // Game.Instance.Window.SetMouseCursorVisible(false);
+            Game.Instance.Window.SetMouseCursorVisible(false);
             Game.Instance.Window.SetMouseCursorGrabbed(true);
             Game.Instance.Window.Closed += (s, e) => Game.Instance.Window.Close();
         }
@@ -115,12 +115,13 @@ namespace WolfRender
         {
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
             {
-                player.Direction += player.RotationSpeed * mouseRotationMultiplier * 5 * dt;
+                player.Direction += player.RotationSpeed * mouseRotationMultiplier * dt;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
             {
-                player.Direction -= player.RotationSpeed * mouseRotationMultiplier * 5 * dt;
+                player.Direction -= player.RotationSpeed * mouseRotationMultiplier * dt;
             }
+
             var mousePosition = Mouse.GetPosition();
             var mouseDelta = mousePosition - previousMousePosition;
             if (mouseDelta.X != 0)
@@ -130,7 +131,7 @@ namespace WolfRender
 
             if (!Game.Instance.MouseVisible)
             {
-                if (mousePosition.X <= Game.Instance.Window.Position.X - 1 || mousePosition.X >= Game.Instance.Window.Position.X + Game.Instance.Window.Size.X)
+                if (mousePosition.X <= Game.Instance.Window.Position.X + 10 || mousePosition.X >= Game.Instance.Window.Position.X + Game.Instance.Window.Size.X)
                 {
                     var center = new Vector2i((int)VideoMode.DesktopMode.Width / 2, (int)VideoMode.DesktopMode.Height / 2);
                     previousMousePosition = center;
