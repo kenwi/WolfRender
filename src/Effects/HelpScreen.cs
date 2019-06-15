@@ -21,6 +21,7 @@ namespace WolfRender
             // text.DisplayedString += $"[L] Toggle Framerate Limiting\n";
             text.DisplayedString += $"[Page Up/Down] Adjust FOV\n";
             text.DisplayedString += $"[WASD] Movement\n";
+            text.DisplayedString += $"[Left/Right] Rotation\n";
             text.DisplayedString += $"[Escape] Quit\n";
             text.FillColor = Color.Green;
             Game.Instance.HelpMenuVisible = true;
