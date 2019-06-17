@@ -30,15 +30,15 @@ namespace WolfRender
             var windowHeight = Game.Instance.Window.Size.Y;
             pixels = new int[windowWidth * windowHeight];
 
-            var rect = new Vector2f(windowWidth / map.Size.X, windowHeight / map.Size.Y);
             for (int i = 0; i < windowWidth; i++)
             {
                 var angle = player.Direction - player.Fov * 0.5f + player.Fov * i / windowWidth;
                 for (float rayLength = 0; rayLength < rayNum; rayLength += rayStep)
                 {
-                    var cx = (uint)(player.Position.X + rayLength * MathF.Cos(angle));
-                    var cy = (uint)(player.Position.Y + rayLength * MathF.Sin(angle));
-                    if (map.Data[cx + cy * map.Size.X] != 0)
+                    var cell = new Vector2f(player.Position.X + rayLength * MathF.Cos(angle),
+                                            player.Position.Y + rayLength * MathF.Sin(angle));
+
+                    if(map.Get(cell) != 0)
                     {
                         var dist = rayLength * Math.Cos(angle - player.Direction);
                         var columnHeight = (int)Math.Min(2000, windowHeight / dist);

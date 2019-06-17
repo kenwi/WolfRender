@@ -30,6 +30,21 @@ namespace WolfRender
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         };
 
-        public Vector2u Size { get; set; } 
+        public Vector2u Size { get; set; }
+
+        public int Get(Vector2f coordinate)
+        {
+            return Get((int)coordinate.X, (int)coordinate.Y);
+        }
+
+        public int Get(Vector2i coordinate)
+        {
+            return Get(coordinate.X, coordinate.Y);
+        }
+
+        public int Get(int x, int y)
+        {
+            return Data[x + y * Size.X];
+        }
     }
 }
