@@ -9,7 +9,6 @@ namespace WolfRender
     {
         List<Keyboard.Key> keydown = new List<Keyboard.Key>();
         Vector2i previousMousePosition = Mouse.GetPosition();
-        float mouseRotationMultiplier = 0.1f;
 
         public void Init()
         {
@@ -121,18 +120,18 @@ namespace WolfRender
         {
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
             {
-                player.Direction += player.RotationSpeed * mouseRotationMultiplier * dt;
+                player.Direction += player.RotationSpeed * dt;
             }
             if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
             {
-                player.Direction -= player.RotationSpeed * mouseRotationMultiplier * dt;
+                player.Direction -= player.RotationSpeed * dt;
             }
 
             var mousePosition = Mouse.GetPosition();
             var mouseDelta = mousePosition - previousMousePosition;
             if (mouseDelta.X != 0)
             {
-                player.Direction += player.RotationSpeed * mouseRotationMultiplier * mouseDelta.X * dt;
+                player.Direction += player.RotationSpeed * mouseDelta.X * dt;
             }
 
             if (!Game.Instance.MouseVisible)

@@ -37,7 +37,7 @@ namespace WolfRender
             }
         }
 
-        public void Init(uint width, uint height, int targetFps = 60, bool limitFrameRate = false)
+        public void Init(uint width, uint height, int targetFps = 60, bool limitFrameRate = true)
         {
             this.targetFps = targetFps;
             Random = new Random();
@@ -48,7 +48,7 @@ namespace WolfRender
             player = new Player();
             player.Fov = MathF.PI * 0.5f;
             player.Position = new Vector2f(map.Size.X / 4, map.Size.Y / 4);
-            player.RotationSpeed = Tools.DegToRad(100);
+            player.RotationSpeed = Tools.DegToRad(5);
             player.MovementSpeed = 2;
             limited = limitFrameRate;
 
