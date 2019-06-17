@@ -101,13 +101,13 @@ namespace WolfRender
                 addMovement(dt, player, playerDirection);
             }
 
-            if (Keyboard.IsKeyPressed(Keyboard.Key.W))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.W) || Keyboard.IsKeyPressed(Keyboard.Key.Up))
             {
                 playerDirection = player.Direction;
                 addMovement(dt, player, playerDirection);
             }
 
-            if (Keyboard.IsKeyPressed(Keyboard.Key.S))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.S) || Keyboard.IsKeyPressed(Keyboard.Key.Down))
             {
                 playerDirection = player.Direction + MathF.PI;
                 addMovement(dt, player, playerDirection);
@@ -125,9 +125,9 @@ namespace WolfRender
                 player.Direction -= player.RotationSpeed * dt;
             }
 
-            if(Game.Instance.MouseVisible)
+            if (Game.Instance.MouseVisible)
                 return;
-                
+
             if (mouseDelta.X != 0)
             {
                 player.Direction += player.RotationSpeed * mouseDelta.X * dt * 0.1f;
