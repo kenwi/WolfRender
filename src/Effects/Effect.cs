@@ -9,6 +9,7 @@ namespace WolfRender
         protected abstract void OnUpdate(float time);
 
         public string Name { get; private set; }
+        public Game Instance => Game.Instance;
 
         protected Effect(string name)
         {

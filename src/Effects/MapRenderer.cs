@@ -18,16 +18,16 @@ namespace WolfRender
         {
             this.map = map;
             this.player = player;
-            var windowWidth = Game.Instance.Window.Size.X;
-            var windowHeight = Game.Instance.Window.Size.Y;
+            var windowWidth = Instance.Window.Size.X;
+            var windowHeight = Instance.Window.Size.Y;
             texture = new Texture(windowWidth, windowHeight);
             cellSize = new Vector2u(windowWidth / map.Size.X, windowHeight / map.Size.Y);
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            var windowWidth = Game.Instance.Window.Size.X;
-            var windowHeight = Game.Instance.Window.Size.Y;
+            var windowWidth = Instance.Window.Size.X;
+            var windowHeight = Instance.Window.Size.Y;
             pixels = new int[windowWidth * windowHeight];
 
             for (int i = 0; i < windowWidth; i++)
@@ -63,8 +63,8 @@ namespace WolfRender
 
         void drawRectangle(int x, int y, int w, int h, int color)
         {
-            var windowWidth = Game.Instance.Window.Size.X;
-            var windowHeight = Game.Instance.Window.Size.Y;
+            var windowWidth = Instance.Window.Size.X;
+            var windowHeight = Instance.Window.Size.Y;
 
             if (h > windowHeight || w > windowWidth)
                 return;

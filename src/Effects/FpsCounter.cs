@@ -42,11 +42,11 @@ namespace WolfRender
             timeSinceLastUpdate += elapsed;
             if (timeSinceLastUpdate > updateRate)
             {
-                var windowHeight = Game.Instance.Window.Size.Y;
+                var windowHeight = Instance.Window.Size.Y;
                 var fps = numFrames / timeSinceLastUpdate.AsSeconds();
                 timeSinceLastUpdate = Time.Zero;
                 numFrames = 0;
-                setText($"[{fps:0.#} FPS / {Game.Instance.DeltaTime:0.#######} ms / {Game.Instance.TotalGameTime.AsSeconds():0.##} sec]", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
+                setText($"[{fps:0.#} FPS / {Instance.DeltaTime:0.#######} ms / {Instance.TotalGameTime.AsSeconds():0.##} sec]", characterSize, new Vector2f(0, windowHeight - characterSize - 4));
             }
         }
     }
