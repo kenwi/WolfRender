@@ -13,23 +13,25 @@ namespace WolfRender
         uint rayNum = 20;
         float rayStep = 0.05f;
         int[] pixels;
+        byte[] bytes;
+        Sprite sprite;
+        uint windowWidth, windowHeight;
 
         public MapRenderer(Map map, Player player) : base("MapRenderer")
         {
             this.map = map;
             this.player = player;
-            var windowWidth = Instance.Window.Size.X;
-            var windowHeight = Instance.Window.Size.Y;
+            windowWidth = Instance.Window.Size.X;
+            windowHeight = Instance.Window.Size.Y;
             texture = new Texture(windowWidth, windowHeight);
             cellSize = new Vector2u(windowWidth / map.Size.X, windowHeight / map.Size.Y);
+            bytes = new byte[windowWidth * windowHeight * 4];
+            sprite = new Sprite(texture);
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            var windowWidth = Instance.Window.Size.X;
-            var windowHeight = Instance.Window.Size.Y;
             pixels = new int[windowWidth * windowHeight];
-
             for (int i = 0; i < windowWidth; i++)
             {
                 var angle = player.Direction - player.Fov * 0.5f + player.Fov * i / windowWidth;
@@ -49,10 +51,8 @@ namespace WolfRender
                 }
             }
 
-            var bytes = new byte[windowWidth * windowHeight * 4];
             Buffer.BlockCopy(pixels, 0, bytes, 0, bytes.Length);
             texture.Update(bytes);
-            var sprite = new Sprite(texture);
             target.Draw(sprite, states);
         }
 
@@ -63,17 +63,16 @@ namespace WolfRender
 
         void drawRectangle(int x, int y, int w, int h, int color)
         {
-            if (h > Instance.Window.Size.Y || w > Instance.Window.Size.X)
+            if (h > windowHeight || w > windowWidth)
                 return;
 
-            var width = Instance.Window.Size.X;
             for (int i = 0; i < w; i++)
             {
                 for (int j = 0; j < h; j++)
                 {
                     var cx = x + i;
                     var cy = y + j;
-                    var index = cx + cy * width;
+                    var index = cx + cy * windowWidth;
                     pixels[index] = color;
                 }
             }
