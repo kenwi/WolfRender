@@ -18,15 +18,13 @@ namespace WolfRender
         bool limited;
 
         public RenderWindow Window { get => window; private set => window = value; }
-        public Vector2f MousePositionNormalized { get => new Vector2f((float)Mouse.GetPosition(window).X / window.Size.X, (float)Mouse.GetPosition(window).Y / window.Size.Y); }
-        public Random Random { get; private set; }
-        public float DeltaTime { get => deltaTime; set => deltaTime = value; }
+        public Vector2i WindowCenter => window.Position + new Vector2i((int)window.Size.X / 2, (int)window.Size.Y / 2);
         public Clock GameTime { get => gameTime; }
         public Player Player { get => player; set => player = value; }
-        public float TargetFPS { get => targetFps; }
+        public Random Random { get; private set; }
+        public float DeltaTime { get => deltaTime; set => deltaTime = value; }
         public bool HelpMenuVisible { get; set; }
         public bool FramerateLimited { get => limited; set => limited = value; }
-        public Vector2i WindowCenter => window.Position + new Vector2i((int)window.Size.X / 2, (int)window.Size.Y / 2);
 
         public bool MouseVisible
         {
@@ -34,6 +32,7 @@ namespace WolfRender
             set
             {
                 Window.SetMouseCursorVisible(value);
+                Window.SetMouseCursorGrabbed(!value);
                 mouseVisible = value;
             }
         }
