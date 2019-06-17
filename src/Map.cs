@@ -7,7 +7,7 @@ namespace WolfRender
     {
         public Map()
         {
-            uint rootLength = (uint)MathF.Sqrt(Data.Length);
+            uint rootLength = (uint)Math.Sqrt(Data.Length);
             Size = new Vector2u(rootLength, rootLength);
         }
 

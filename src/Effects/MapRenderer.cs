@@ -34,13 +34,12 @@ namespace WolfRender
             pixels = new int[windowWidth * windowHeight];
             for (int i = 0; i < windowWidth; i++)
             {
-                var angle = player.Direction - player.Fov * 0.5f + player.Fov * i / windowWidth;
-                for (float rayLength = 0; rayLength < rayNum; rayLength += rayStep)
+                double angle = player.Direction - player.Fov * 0.5f + player.Fov * i / windowWidth;
+                for (double rayLength = 0; rayLength < rayNum; rayLength += rayStep)
                 {
-                    var cell = new Vector2f(player.Position.X + rayLength * MathF.Cos(angle),
-                                            player.Position.Y + rayLength * MathF.Sin(angle));
-
-                    if(map.Get(cell) != 0)
+                    double cellX = player.Position.X + rayLength * Math.Cos(angle);
+                    double cellY = player.Position.Y + rayLength * Math.Sin(angle);
+                    if(map.Data[(int)cellX + (int)cellY * map.Size.X] != 0)
                     {
                         var dist = rayLength * Math.Cos(angle - player.Direction);
                         var columnHeight = (int)Math.Min(2000, windowHeight / dist);
