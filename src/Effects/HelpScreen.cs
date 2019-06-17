@@ -8,12 +8,10 @@ namespace WolfRender
     {
         Text text;
         Font font;
-        Clock clock;
         int duration = 5;
 
         public HelpScreen() : base("HelpScreen")
         {
-            clock = new Clock();
             font = new Font("cour.ttf");
             text = new Text("", font, 15);
             text.DisplayedString += $"[H] Toggle Help\n";
@@ -37,10 +35,9 @@ namespace WolfRender
 
         protected override void OnUpdate(float time)
         {
-            if (clock?.ElapsedTime.AsSeconds() > duration)
+            if(Game.Instance.TotalGameTime.AsSeconds() > duration)
             {
                 Game.Instance.HelpMenuVisible = false;
-                clock = null;
             }
         }
     }

@@ -63,7 +63,6 @@ namespace WolfRender
             while (window.IsOpen)
             {
                 deltaTime = gameTime.Restart().AsSeconds();
-                totalGameTime += Time.FromSeconds(deltaTime);                
                 if (limited)
                 {
                     while (deltaTime < 1f / targetFps)
@@ -75,6 +74,7 @@ namespace WolfRender
                 Input.Instance.Update(deltaTime);
                 Update(deltaTime);
                 Render();
+                totalGameTime += Time.FromSeconds(deltaTime);                
             }
         }
 
