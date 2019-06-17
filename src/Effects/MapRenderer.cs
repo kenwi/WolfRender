@@ -66,13 +66,14 @@ namespace WolfRender
             if (h > Instance.Window.Size.Y || w > Instance.Window.Size.X)
                 return;
 
+            var width = Instance.Window.Size.X;
             for (int i = 0; i < w; i++)
             {
                 for (int j = 0; j < h; j++)
                 {
                     var cx = x + i;
                     var cy = y + j;
-                    var index = cx + cy * Instance.Window.Size.X;
+                    var index = cx + cy * width;
                     pixels[index] = color;
                 }
             }
