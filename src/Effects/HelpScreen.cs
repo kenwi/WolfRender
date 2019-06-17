@@ -8,7 +8,7 @@ namespace WolfRender
     {
         Text text;
         Font font;
-        int duration = 5;
+        Time duration = Time.FromSeconds(5);
 
         public HelpScreen() : base("HelpScreen")
         {
@@ -35,7 +35,7 @@ namespace WolfRender
 
         protected override void OnUpdate(float time)
         {
-            if(Instance.TotalGameTime.AsSeconds() > duration)
+            if(Instance.TotalGameTime > duration)
             {
                 Instance.HelpMenuVisible = false;
             }
