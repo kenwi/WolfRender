@@ -8,6 +8,7 @@ namespace WolfRender
     public class Input : Singleton<Input>
     {
         List<Keyboard.Key> keydown = new List<Keyboard.Key>();
+        float mouseSpeedMultiplier = 0.001f;
 
         public void Init()
         {
@@ -114,7 +115,7 @@ namespace WolfRender
             }
         }
 
-        private static void PlayerRotation(float dt, Player player, Vector2i mouseDelta)
+        private void PlayerRotation(float dt, Player player, Vector2i mouseDelta)
         {
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
             {
@@ -130,7 +131,7 @@ namespace WolfRender
 
             if (mouseDelta.X != 0)
             {
-                player.Direction += player.RotationSpeed * mouseDelta.X * dt * 0.1f;
+                player.Direction += player.RotationSpeed * mouseDelta.X * mouseSpeedMultiplier;
             }
         }
 
