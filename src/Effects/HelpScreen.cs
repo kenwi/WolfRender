@@ -19,8 +19,8 @@ namespace WolfRender
             text.DisplayedString += $"[H] Toggle Help\n";
             text.DisplayedString += $"[M] Toggle Mouse\n";
             text.DisplayedString += $"[L] Toggle Framerate Limiting\n";
-            text.DisplayedString += $"[Page Up/Down] Adjust FOV\n";
-            text.DisplayedString += $"[WASD] Movement\n";
+            text.DisplayedString += $"[PageUp/PageDown] Adjust FOV\n";
+            text.DisplayedString += $"[WASD+ArrowUp/ArrowDown] Movement\n";
             text.DisplayedString += $"[Left/Right] Rotation\n";
             text.DisplayedString += $"[Escape] Quit\n";
             text.FillColor = Color.Green;
