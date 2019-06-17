@@ -11,7 +11,6 @@ namespace WolfRender
         Player player;
         Effect[] effects;
         Clock gameTime;
-        Time previousTime;
         RenderWindow window;
         float deltaTime;
         float targetFps;
@@ -27,6 +26,8 @@ namespace WolfRender
         public float TargetFPS { get => targetFps; }
         public bool HelpMenuVisible { get; set; }
         public bool FramerateLimited { get => limited; set => limited = value; }
+        public Vector2i WindowCenter => window.Position + new Vector2i((int)window.Size.X / 2, (int)window.Size.Y / 2);
+
         public bool MouseVisible
         {
             get => mouseVisible;
@@ -42,16 +43,14 @@ namespace WolfRender
             this.targetFps = targetFps;
             Random = new Random();
             gameTime = new Clock();
-            previousTime = gameTime.ElapsedTime;
             window = new RenderWindow(new VideoMode(width, height, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
             map = new Map();
             player = new Player();
             player.Fov = MathF.PI * 0.5f;
             player.Position = new Vector2f(map.Size.X / 4, map.Size.Y / 4);
-            player.RotationSpeed = Tools.DegToRad(5);
+            player.RotationSpeed = Tools.DegToRad(100);
             player.MovementSpeed = 2;
             limited = limitFrameRate;
-
             effects = new Effect[]{
                 new MapRenderer(map, player)
                 , new HelpScreen()
