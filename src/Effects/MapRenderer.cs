@@ -63,10 +63,7 @@ namespace WolfRender
 
         void drawRectangle(int x, int y, int w, int h, int color)
         {
-            var windowWidth = Instance.Window.Size.X;
-            var windowHeight = Instance.Window.Size.Y;
-
-            if (h > windowHeight || w > windowWidth)
+            if (h > Instance.Window.Size.Y || w > Instance.Window.Size.X)
                 return;
 
             for (int i = 0; i < w; i++)
@@ -75,7 +72,7 @@ namespace WolfRender
                 {
                     var cx = x + i;
                     var cy = y + j;
-                    var index = cx + cy * windowWidth;
+                    var index = cx + cy * Instance.Window.Size.X;
                     pixels[index] = color;
                 }
             }
