@@ -8,10 +8,10 @@ namespace WolfRender
     public class Input : Singleton<Input>
     {
         List<Keyboard.Key> keydown = new List<Keyboard.Key>();
-        Vector2i previousMousePosition = Mouse.GetPosition();
 
         public void Init()
         {
+            Mouse.SetPosition(Game.Instance.WindowCenter);
             Game.Instance.Window.SetMouseCursorVisible(false);
             Game.Instance.Window.SetMouseCursorGrabbed(true);
             Game.Instance.Window.Closed += (s, e) => Game.Instance.Window.Close();
@@ -19,16 +19,14 @@ namespace WolfRender
 
         public void Update(float dt)
         {
-            var player = Game.Instance.Player;
-            PlayerOptions(dt, player);
-            PlayerMovement(dt, player);
-            PlayerRotation(dt, player);
-        }
-        
-        private static void addMovement(float dt, Player player, float playerDirection)
-        {
-            player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt, 
-                                            player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+            var mouseDelta = Mouse.GetPosition() - Game.Instance.WindowCenter;
+            PlayerOptions(dt, Game.Instance.Player);
+            PlayerMovement(dt, Game.Instance.Player);
+            PlayerRotation(dt, Game.Instance.Player, mouseDelta);
+            if (!Game.Instance.MouseVisible)
+            {
+                Mouse.SetPosition(Game.Instance.WindowCenter);
+            }
         }
 
         private void PlayerOptions(float dt, Player player)
@@ -116,7 +114,7 @@ namespace WolfRender
             }
         }
 
-        private void PlayerRotation(float dt, Player player)
+        private static void PlayerRotation(float dt, Player player, Vector2i mouseDelta)
         {
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
             {
@@ -127,24 +125,19 @@ namespace WolfRender
                 player.Direction -= player.RotationSpeed * dt;
             }
 
-            var mousePosition = Mouse.GetPosition();
-            var mouseDelta = mousePosition - previousMousePosition;
+            if(Game.Instance.MouseVisible)
+                return;
+                
             if (mouseDelta.X != 0)
             {
-                player.Direction += player.RotationSpeed * mouseDelta.X * dt;
+                player.Direction += player.RotationSpeed * mouseDelta.X * dt * 0.1f;
             }
+        }
 
-            if (!Game.Instance.MouseVisible)
-            {
-                if (mousePosition.X <= Game.Instance.Window.Position.X + 10 || mousePosition.X >= Game.Instance.Window.Position.X + Game.Instance.Window.Size.X)
-                {
-                    var center = new Vector2i((int)VideoMode.DesktopMode.Width / 2, (int)VideoMode.DesktopMode.Height / 2);
-                    previousMousePosition = center;
-                    Mouse.SetPosition(center);
-                    return;
-                }
-            }
-            previousMousePosition = mousePosition;
+        private static void addMovement(float dt, Player player, float playerDirection)
+        {
+            player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt,
+                                            player.MovementSpeed * MathF.Sin(playerDirection) * dt);
         }
     }
 }
