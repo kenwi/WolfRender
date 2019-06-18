@@ -9,7 +9,9 @@ namespace WolfRender
         Map map;
         Player player;
         Vector2u cellSize;
+        Vector2u textureSize;
         Texture texture;
+
         uint rayNum = 20;
         float rayStep = 0.05f;
         int[] pixels;
@@ -25,9 +27,47 @@ namespace WolfRender
             windowHeight = Instance.Window.Size.Y;
             texture = new Texture(windowWidth, windowHeight);
             cellSize = new Vector2u(windowWidth / map.Size.X, windowHeight / map.Size.Y);
+            textureSize = new Vector2u((uint)Math.Sqrt(texturePixels.Length), (uint)Math.Sqrt(texturePixels.Length));
             bytes = new byte[windowWidth * windowHeight * 4];
             sprite = new Sprite(texture);
         }
+
+        int GetWallTextureID(double hitx, double hity, int[] tex_walls)
+        {
+            double x = hitx - Math.Floor(hitx + 0.5f);
+            double y = hity - Math.Floor(hity + 0.5f);
+            int tex = (int)(x * Math.Sqrt(tex_walls.Length));
+
+            if (Math.Abs(y) > Math.Abs(x))
+                tex = (int)(y * Math.Sqrt(tex_walls.Length));
+            if (tex < 0)
+                tex += (int)Math.Sqrt(tex_walls.Length);
+
+            return tex;
+        }
+
+        int[] GetScaledColumn(int textureId, int textureCoord, int columnHeight, int[] texture)
+        {
+            int[] columnPixels = new int[columnHeight];
+            for (int y = 0; y < columnHeight; y++)
+            {
+                columnPixels[y] = GetTextureValue(textureCoord, (int)(y * textureSize.Y) / columnHeight, textureId, textureSize.X);
+            }
+            return columnPixels;
+        }
+
+        int GetTextureValue(int x, int y, int idx, uint size) => texturePixels[x + idx * size + y * size];
+
+        int[] texturePixels = {
+            1, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            1, 1, 1, 1, 1, 1, 1, 1,
+        };
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
@@ -39,12 +79,14 @@ namespace WolfRender
                 {
                     double cellX = player.Position.X + rayLength * Math.Cos(angle);
                     double cellY = player.Position.Y + rayLength * Math.Sin(angle);
-                    if(map.Data[(int)cellX + (int)cellY * map.Size.X] != 0)
+                    
+                    int wallTextureID = GetWallTextureID(cellX, cellY, texturePixels);
+                    if (map.Data[(int)cellX + (int)cellY * map.Size.X] != 0)
                     {
                         var dist = rayLength * Math.Cos(angle - player.Direction);
-                        var columnHeight = (int)Math.Min(2000, windowHeight / dist);
-                        var color = Tools.PackColor((byte)(255 - Math.Clamp(rayLength * rayLength, 10, 255)), 0, 0);
-                        drawRectangle(i, (int)windowHeight / 2 - columnHeight / 2, 1, columnHeight, color);
+                        var columnHeight = (int)Math.Min(2000, windowHeight / dist);                        
+                        var column = GetScaledColumn(0, wallTextureID, columnHeight, texturePixels);
+                        drawRectangle(i, (int)windowHeight / 2 - columnHeight / 2, 1, columnHeight, column, rayLength);
                         break;
                     }
                 }
@@ -60,7 +102,7 @@ namespace WolfRender
 
         }
 
-        void drawRectangle(int x, int y, int w, int h, int color)
+        void drawRectangle(int x, int y, int w, int h, int[] color, double distance)
         {
             if (h > windowHeight || w > windowWidth)
                 return;
@@ -72,7 +114,11 @@ namespace WolfRender
                     var cx = x + i;
                     var cy = y + j;
                     var index = cx + cy * windowWidth;
-                    pixels[index] = color;
+                    var colorId = color[j];
+                    if(colorId != 0)
+                        pixels[index] = Tools.PackColor((byte)(150 - Math.Clamp(distance, 1, 128)), 0, 0);
+                    else
+                        pixels[index] = Tools.PackColor(0, 0, (byte)(150 - Math.Clamp(distance * distance, 1, 128)));
                 }
             }
         }
