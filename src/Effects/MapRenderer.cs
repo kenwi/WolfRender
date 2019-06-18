@@ -18,6 +18,7 @@ namespace WolfRender
         byte[] bytes;
         Sprite sprite;
         uint windowWidth, windowHeight;
+        double lightMultiplier = 1.0f;
 
         public MapRenderer(Map map, Player player) : base("MapRenderer")
         {
@@ -79,12 +80,12 @@ namespace WolfRender
                 {
                     double cellX = player.Position.X + rayLength * Math.Cos(angle);
                     double cellY = player.Position.Y + rayLength * Math.Sin(angle);
-                    
+
                     int wallTextureID = GetWallTextureID(cellX, cellY, texturePixels);
                     if (map.Data[(int)cellX + (int)cellY * map.Size.X] != 0)
                     {
                         var dist = rayLength * Math.Cos(angle - player.Direction);
-                        var columnHeight = (int)Math.Min(2000, windowHeight / dist);                        
+                        var columnHeight = (int)Math.Min(2000, windowHeight / dist);
                         var column = GetScaledColumn(0, wallTextureID, columnHeight, texturePixels);
                         drawRectangle(i, (int)windowHeight / 2 - columnHeight / 2, 1, columnHeight, column, rayLength);
                         break;
@@ -99,7 +100,7 @@ namespace WolfRender
 
         protected override void OnUpdate(float time)
         {
-
+            lightMultiplier = Math.Abs(Math.Sin(Instance.TotalGameTime.AsSeconds()));
         }
 
         void drawRectangle(int x, int y, int w, int h, int[] color, double distance)
@@ -115,8 +116,8 @@ namespace WolfRender
                     var cy = y + j;
                     var index = cx + cy * windowWidth;
                     var colorId = color[j];
-                    if(colorId != 0)
-                        pixels[index] = Tools.PackColor((byte)(150 - Math.Clamp(distance, 1, 128)), 0, 0);
+                    if (colorId != 0)
+                        pixels[index] = Tools.PackColor((byte)((150 - Math.Clamp(distance, 1, 128)) * lightMultiplier), 0, 0);
                     else
                         pixels[index] = Tools.PackColor(0, 0, (byte)(150 - Math.Clamp(distance * distance, 1, 128)));
                 }
