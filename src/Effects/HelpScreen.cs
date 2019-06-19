@@ -23,7 +23,7 @@ namespace WolfRender
             text.DisplayedString += $"[Left/Right] Rotation\n";
             text.DisplayedString += $"[Escape] Quit\n";
             text.FillColor = Color.Green;
-            Instance.HelpMenuVisible = true;
+            Instance.IsHelpMenuVisible = true;
         }
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
@@ -38,7 +38,7 @@ namespace WolfRender
         {
             if(active && Instance.TotalGameTime > duration)
             {
-                Instance.HelpMenuVisible = false;
+                Instance.IsHelpMenuVisible = false;
                 active = false;
             }
         }
