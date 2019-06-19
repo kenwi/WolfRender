@@ -51,7 +51,7 @@ namespace WolfRender
             {
                 if (!keydown.Contains(Keyboard.Key.H))
                 {
-                    Game.Instance.HelpMenuVisible = !Game.Instance.HelpMenuVisible;
+                    Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible;
                     keydown.Add(Keyboard.Key.H);
                 }
             }
@@ -64,7 +64,7 @@ namespace WolfRender
             {
                 if (!keydown.Contains(Keyboard.Key.L))
                 {
-                    Game.Instance.FramerateLimited = !Game.Instance.FramerateLimited;
+                    Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited;
                     keydown.Add(Keyboard.Key.L);
                 }
             }

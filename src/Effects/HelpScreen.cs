@@ -28,7 +28,7 @@ namespace WolfRender
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            if (Instance.HelpMenuVisible)
+            if (Instance.IsHelpMenuVisible)
             {
                 target.Draw(text, states);
             }
