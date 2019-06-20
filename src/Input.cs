@@ -36,9 +36,9 @@ namespace WolfRender
             checkKeyAction(Keyboard.Key.PageUp, () => player.Fov += dt);
             checkKeyAction(Keyboard.Key.PageDown, () => player.Fov -= dt);
 
-            checkToogleAction(Keyboard.Key.H, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible);
-            checkToogleAction(Keyboard.Key.L, () => Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited);
-            checkToogleAction(Keyboard.Key.M, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsMouseVisible);
+            checkToggleAction(Keyboard.Key.H, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible);
+            checkToggleAction(Keyboard.Key.L, () => Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited);
+            checkToggleAction(Keyboard.Key.M, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsMouseVisible);
         }
 
         private bool checkToggle(Keyboard.Key key)
@@ -60,7 +60,7 @@ namespace WolfRender
             return value;
         }
 
-        private void checkToogleAction(Keyboard.Key key, Action action)
+        private void checkToggleAction(Keyboard.Key key, Action action)
         {
             if (checkToggle(key))
                 action();
@@ -75,11 +75,11 @@ namespace WolfRender
         private static void PlayerMovement(float dt, Player player)
         {
             float playerDirection = player.Direction;
-            // if (Keyboard.IsKeyPressed(Keyboard.Key.A))
-            // {
-            //     playerDirection = player.Direction - MathF.PI * 0.5f;
-            //     addMovement(dt, player, playerDirection);
-            // }
+            if (Keyboard.IsKeyPressed(Keyboard.Key.A))
+            {
+                playerDirection = player.Direction - MathF.PI * 0.5f;
+                addMovement(dt, player, playerDirection);
+            }
 
             if (Keyboard.IsKeyPressed(Keyboard.Key.D))
             {
