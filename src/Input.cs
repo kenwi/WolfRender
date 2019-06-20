@@ -38,7 +38,7 @@ namespace WolfRender
 
             checkToggleAction(Keyboard.Key.H, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible);
             checkToggleAction(Keyboard.Key.L, () => Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited);
-            checkToggleAction(Keyboard.Key.M, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsMouseVisible);
+            checkToggleAction(Keyboard.Key.M, () => Game.Instance.IsMouseVisible = !Game.Instance.IsMouseVisible);
         }
 
         private bool checkToggle(Keyboard.Key key)
