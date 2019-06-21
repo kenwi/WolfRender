@@ -24,7 +24,7 @@ namespace WolfRender
             PlayerOptions(dt, Game.Instance.Player);
             PlayerMovement(dt, Game.Instance.Player);
             PlayerRotation(dt, Game.Instance.Player, mouseDelta);
-            if (!Game.Instance.MouseVisible)
+            if (!Game.Instance.IsMouseVisible)
             {
                 Mouse.SetPosition(Game.Instance.WindowCenter);
             }
@@ -32,59 +32,44 @@ namespace WolfRender
 
         private void PlayerOptions(float dt, Player player)
         {
-            if (Keyboard.IsKeyPressed(Keyboard.Key.PageUp))
-            {
-                player.Fov += dt;
-            }
+            checkKeyAction(Keyboard.Key.Escape, () => Game.Instance.Window.Close());
+            checkKeyAction(Keyboard.Key.PageUp, () => player.Fov += dt);
+            checkKeyAction(Keyboard.Key.PageDown, () => player.Fov -= dt);
 
-            if (Keyboard.IsKeyPressed(Keyboard.Key.PageDown))
-            {
-                player.Fov -= dt;
-            }
+            checkToggleAction(Keyboard.Key.H, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible);
+            checkToggleAction(Keyboard.Key.L, () => Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited);
+            checkToggleAction(Keyboard.Key.M, () => Game.Instance.IsMouseVisible = !Game.Instance.IsMouseVisible);
+        }
 
-            if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
+        private bool checkToggle(Keyboard.Key key)
+        {
+            bool value = false;
+            if (Keyboard.IsKeyPressed(key))
             {
-                Game.Instance.Window.Close();
-            }
-
-            if (Keyboard.IsKeyPressed(Keyboard.Key.H))
-            {
-                if (!keydown.Contains(Keyboard.Key.H))
+                if (!keydown.Contains(key))
                 {
-                    Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible;
-                    keydown.Add(Keyboard.Key.H);
+                    keydown.Add(key);
+                    value = true;
                 }
             }
             else
             {
-                keydown.Remove(Keyboard.Key.H);
+                keydown.Remove(key);
+                value = false;
             }
+            return value;
+        }
 
-            if (Keyboard.IsKeyPressed(Keyboard.Key.L))
-            {
-                if (!keydown.Contains(Keyboard.Key.L))
-                {
-                    Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited;
-                    keydown.Add(Keyboard.Key.L);
-                }
-            }
-            else
-            {
-                keydown.Remove(Keyboard.Key.L);
-            }
+        private void checkToggleAction(Keyboard.Key key, Action action)
+        {
+            if (checkToggle(key))
+                action();
+        }
 
-            if (Keyboard.IsKeyPressed(Keyboard.Key.M))
-            {
-                if (!keydown.Contains(Keyboard.Key.M))
-                {
-                    Game.Instance.MouseVisible = !Game.Instance.MouseVisible;
-                    keydown.Add(Keyboard.Key.M);
-                }
-            }
-            else
-            {
-                keydown.Remove(Keyboard.Key.M);
-            }
+        private void checkKeyAction(Keyboard.Key key, Action action)
+        {
+            if(Keyboard.IsKeyPressed(key))
+                action();
         }
 
         private static void PlayerMovement(float dt, Player player)
@@ -126,7 +111,7 @@ namespace WolfRender
                 player.Direction -= player.RotationSpeed * dt;
             }
 
-            if (Game.Instance.MouseVisible)
+            if (Game.Instance.IsMouseVisible)
                 return;
 
             if (mouseDelta.X != 0)
