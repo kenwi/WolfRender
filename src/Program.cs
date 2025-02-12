@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            Game.Instance.Init(1000, 700);
+            Game.Instance.Init(1920, 1080);
             Input.Instance.Init();
             Game.Instance.Run();
         }

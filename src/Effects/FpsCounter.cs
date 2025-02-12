@@ -42,7 +42,8 @@ namespace WolfRender
             timeSinceLastUpdate += elapsed;
             if (timeSinceLastUpdate > updateRate)
             {
-                var windowHeight = Instance.Window.Size.Y;
+                var view = Instance.Window.GetView();
+                var windowHeight = view.Size.Y;
                 var fps = numFrames / timeSinceLastUpdate.AsSeconds();
                 timeSinceLastUpdate = Time.Zero;
                 numFrames = 0;

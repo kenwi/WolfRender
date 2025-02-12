@@ -22,9 +22,9 @@ namespace WolfRender
         {
             var mouseDelta = Mouse.GetPosition() - Game.Instance.WindowCenter;
             PlayerOptions(dt, Game.Instance.Player);
-            PlayerMovement(dt, Game.Instance.Player);
+            Game.Instance.Player.Update(dt, Game.Instance.MapRenderer.Map);
             PlayerRotation(dt, Game.Instance.Player, mouseDelta);
-            if (!Game.Instance.IsMouseVisible)
+            if (!Game.Instance.MouseVisible)
             {
                 Mouse.SetPosition(Game.Instance.WindowCenter);
             }
@@ -38,7 +38,7 @@ namespace WolfRender
 
             checkToggleAction(Keyboard.Key.H, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible);
             checkToggleAction(Keyboard.Key.L, () => Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited);
-            checkToggleAction(Keyboard.Key.M, () => Game.Instance.IsMouseVisible = !Game.Instance.IsMouseVisible);
+            checkToggleAction(Keyboard.Key.M, () => Game.Instance.MouseVisible = !Game.Instance.MouseVisible);
         }
 
         private bool checkToggle(Keyboard.Key key)
@@ -72,46 +72,9 @@ namespace WolfRender
                 action();
         }
 
-        private static void PlayerMovement(float dt, Player player)
-        {
-            float playerDirection = player.Direction;
-            if (Keyboard.IsKeyPressed(Keyboard.Key.A))
-            {
-                playerDirection = player.Direction - MathF.PI * 0.5f;
-                addMovement(dt, player, playerDirection);
-            }
-
-            if (Keyboard.IsKeyPressed(Keyboard.Key.D))
-            {
-                playerDirection = player.Direction + MathF.PI * 0.5f;
-                addMovement(dt, player, playerDirection);
-            }
-
-            if (Keyboard.IsKeyPressed(Keyboard.Key.W) || Keyboard.IsKeyPressed(Keyboard.Key.Up))
-            {
-                playerDirection = player.Direction;
-                addMovement(dt, player, playerDirection);
-            }
-
-            if (Keyboard.IsKeyPressed(Keyboard.Key.S) || Keyboard.IsKeyPressed(Keyboard.Key.Down))
-            {
-                playerDirection = player.Direction + MathF.PI;
-                addMovement(dt, player, playerDirection);
-            }
-        }
-
         private void PlayerRotation(float dt, Player player, Vector2i mouseDelta)
         {
-            if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
-            {
-                player.Direction += player.RotationSpeed * dt;
-            }
-            if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
-            {
-                player.Direction -= player.RotationSpeed * dt;
-            }
-
-            if (Game.Instance.IsMouseVisible)
+            if (Game.Instance.MouseVisible)
                 return;
 
             if (mouseDelta.X != 0)
@@ -120,10 +83,9 @@ namespace WolfRender
             }
         }
 
-        private static void addMovement(float dt, Player player, float playerDirection)
+        public static bool IsKeyPressed(Keyboard.Key key)
         {
-            player.Position += new Vector2f(player.MovementSpeed * MathF.Cos(playerDirection) * dt,
-                                            player.MovementSpeed * MathF.Sin(playerDirection) * dt);
+            return Keyboard.IsKeyPressed(key);
         }
     }
 }

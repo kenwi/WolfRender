@@ -17,11 +17,13 @@ namespace WolfRender
         uint targetFps;
         bool mouseVisible;
         bool limited;
+        MapRenderer mapRenderer;
 
         public RenderWindow Window { get => window; set => window = value; }
-        public Vector2i WindowCenter => window.Position + new Vector2i((int)window.Size.X / 2, (int)window.Size.Y / 2);
+        public Vector2i WindowCenter { get; set; }//=> window.Position + new Vector2i((int)window.Size.X / 2, (int)window.Size.Y / 2);
         public Time TotalGameTime { get => totalGameTime; }
         public Player Player { get => player; set => player = value; }
+        public MapRenderer MapRenderer { get => mapRenderer; }
         public Random Random { get; private set; }
         public float DeltaTime { get => deltaTime; set => deltaTime = value; }
         public bool IsHelpMenuVisible { get; set; }
@@ -58,18 +60,28 @@ namespace WolfRender
             Random = new Random();
             gameTime = new Clock();
             window = new RenderWindow(new VideoMode(width, height, VideoMode.DesktopMode.BitsPerPixel), "WolfRender");
+
+            View view = new View(new FloatRect(0, 0, 1024, 768));
+            window.SetView(view);
+            WindowCenter = window.Position + new Vector2i((int)view.Size.X / 2, (int)view.Size.Y / 2);
+
             this.targetFps = targetFps;
             this.IsFramerateLimited = limitFrameRate;
             map = new Map();
-            player = new Player();
+            
+            player = new Player(
+                new Vector2f(map.Size.X / 4, map.Size.Y / 4),
+                0.0f
+            );
+            
             player.Fov = MathF.PI * 0.5f;
-            player.Position = new Vector2f(map.Size.X / 4, map.Size.Y / 4);
-            player.RotationSpeed = Tools.DegToRad(100);
             player.MovementSpeed = 2;
+            
+            mapRenderer = new MapRenderer(map, player);
             effects = new Effect[]{
-                new MapRenderer(map, player)
-                , new HelpScreen()
-                , new FpsCounter()
+                mapRenderer,
+                new HelpScreen(),
+                new FpsCounter()
             };
         }
 
