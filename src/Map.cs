@@ -8,6 +8,7 @@ namespace WolfRender
     public class Map
     {
         public int[,] Data { get; private set; }
+        public Texture MapTexture { get; private set; }
         public Vector2i Size { get; private set; }
 
         public Map()
@@ -23,7 +24,8 @@ namespace WolfRender
                 Image mapImage = new Image(filename);
                 Size = new Vector2i((int)mapImage.Size.X, (int)mapImage.Size.Y);
                 Data = new int[Size.X, Size.Y];
-
+                MapTexture = new Texture(mapImage); 
+                
                 // Convert each pixel to map data
                 for (int y = 0; y < Size.Y; y++)
                 {
@@ -32,7 +34,7 @@ namespace WolfRender
                         Color pixel = mapImage.GetPixel((uint)x, (uint)y);
                         
                         // Convert pixel to grayscale and threshold
-                        float brightness = (pixel.R + pixel.G + pixel.B) / (3.0f * 255.0f);
+                        float brightness = (pixel.R + pixel.G + pixel.B ) / (3.0f * 255.0f);
                         
                         // If pixel is darker than 50% gray, it's a wall
                         Data[x, y] = brightness < 0.5f ? 1 : 0;

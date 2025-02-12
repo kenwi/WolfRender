@@ -24,6 +24,11 @@ namespace WolfRender
         uint windowWidth, windowHeight;
         double lightMultiplier = 1.0f;
 
+        private RectangleShape minimapBackground;
+        private Sprite minimapSprite;
+        private CircleShape playerDot;
+        private const float MINIMAP_SCALE = 4.0f;  // Adjust this to change minimap size
+
         readonly int[] colorPalette = {
             Tools.PackColor(0, 0, 0),         // 0: Black
             Tools.PackColor(140, 28, 28),     // 1: Dark blood red
@@ -92,6 +97,20 @@ namespace WolfRender
             fovHalf = Fov * 0.5;
             halfHeight = (int)windowHeight / 2;
             textureMask = (int)textureSize.X - 1;
+
+            // Initialize minimap elements
+            minimapBackground = new RectangleShape(new Vector2f(map.Size.X * MINIMAP_SCALE, map.Size.Y * MINIMAP_SCALE));
+            minimapBackground.FillColor = new Color(0, 0, 0, 128);  // Semi-transparent black
+            minimapBackground.Position = new Vector2f(windowWidth - (map.Size.X * MINIMAP_SCALE) - 10, 10);  // 10px padding
+
+            minimapSprite = new Sprite(map.MapTexture);
+            minimapSprite.Scale = new Vector2f(MINIMAP_SCALE, MINIMAP_SCALE);
+            minimapSprite.Position = minimapBackground.Position;
+            minimapSprite.Color = new Color(255, 255, 255, 64);  // Semi-transparent white
+
+            playerDot = new CircleShape(2);  // 3px radius
+            playerDot.FillColor = new Color(0, 0, 128, 64);
+            playerDot.Origin = new Vector2f(2, 2);  // Center the dot
         }
 
         int GetTextureValue(int x, int y, int idx, uint size, int[] textureArray) 
@@ -135,7 +154,6 @@ namespace WolfRender
             float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 3.0);
             return Math.Max(minShade, shade);
         }
-
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
@@ -275,6 +293,17 @@ namespace WolfRender
             });
 
             render(target, states);
+
+            // After drawing the main view, draw the minimap
+            target.Draw(minimapBackground);
+            target.Draw(minimapSprite);
+
+            // Update and draw player position on minimap
+            playerDot.Position = new Vector2f(
+                minimapSprite.Position.X + (player.Position.X * MINIMAP_SCALE),
+                minimapSprite.Position.Y + (player.Position.Y * MINIMAP_SCALE)
+            );
+            target.Draw(playerDot);
         }
 
         private void render(RenderTarget target, RenderStates states)
@@ -288,5 +317,13 @@ namespace WolfRender
         {
             lightMultiplier = Math.Abs(Math.Sin(Instance.TotalGameTime.AsSeconds()));
         }
+
+        //public override void Dispose()
+        //{
+        //    base.Dispose();
+        //    minimapBackground.Dispose();
+        //    minimapSprite.Dispose();
+        //    playerDot.Dispose();
+        //}
     }
 }
