@@ -9,7 +9,6 @@ namespace WolfRender
     {
         Map map;
         Player player;
-        Vector2u cellSize;
         Vector2u textureSize;
         Texture texture;
 
@@ -84,7 +83,6 @@ namespace WolfRender
             windowHeight = (uint)view.Size.Y;
 
             texture = new Texture(windowWidth, windowHeight);
-            cellSize = new Vector2u(windowWidth / map.Size.X, windowHeight / map.Size.Y);
             textureSize = new Vector2u(8, 8); // Since all textures are 8x8
             bytes = new byte[windowWidth * windowHeight * 4];
             sprite = new Sprite(texture);
@@ -94,20 +92,6 @@ namespace WolfRender
             fovHalf = Fov * 0.5;
             halfHeight = (int)windowHeight / 2;
             textureMask = (int)textureSize.X - 1;
-        }
-
-        int GetWallTextureID(double hitx, double hity, int[] tex_walls)
-        {
-            double x = hitx - Math.Floor(hitx + 0.5f);
-            double y = hity - Math.Floor(hity + 0.5f);
-            int tex = (int)(x * Math.Sqrt(tex_walls.Length));
-
-            if (Math.Abs(y) > Math.Abs(x))
-                tex = (int)(y * Math.Sqrt(tex_walls.Length));
-            if (tex < 0)
-                tex += (int)Math.Sqrt(tex_walls.Length);
-
-            return tex;
         }
 
         int GetTextureValue(int x, int y, int idx, uint size, int[] textureArray) 
@@ -122,7 +106,6 @@ namespace WolfRender
 
             // Position of the camera plane relative to screen height
             int screenHeight = (int)windowHeight;
-            double cameraHeight = screenHeight / 2.0;
 
             // Current y position compared to the center of the screen (the horizon)
             double currentDist = screenHeight / (2.0 * y - screenHeight);
@@ -159,7 +142,7 @@ namespace WolfRender
             Parallel.For(0, (int)windowWidth, x =>  // Explicit cast to int
             {
                 double angle = player.Direction - fovHalf + (x * Fov) / windowWidth;
-                
+
                 // Precalculate ray direction
                 double rayDirX = Math.Cos(angle);
                 double rayDirY = Math.Sin(angle);
@@ -175,13 +158,13 @@ namespace WolfRender
                 // Calculate step and initial sideDist
                 int stepX = rayDirX < 0 ? -1 : 1;
                 int stepY = rayDirY < 0 ? -1 : 1;
-                
-                double sideDistX = rayDirX < 0 
-                    ? (player.Position.X - mapX) * deltaDistX 
+
+                double sideDistX = rayDirX < 0
+                    ? (player.Position.X - mapX) * deltaDistX
                     : (mapX + 1.0 - player.Position.X) * deltaDistX;
-                
-                double sideDistY = rayDirY < 0 
-                    ? (player.Position.Y - mapY) * deltaDistY 
+
+                double sideDistY = rayDirY < 0
+                    ? (player.Position.Y - mapY) * deltaDistY
                     : (mapY + 1.0 - player.Position.Y) * deltaDistY;
 
                 // Perform DDA
@@ -256,10 +239,10 @@ namespace WolfRender
                 {
                     // Calculate real distance to the floor/ceiling point
                     double currentDist = Math.Abs(windowHeight / (2.0 * y - windowHeight)); // Ensure it's positive
-                    
+
                     // Scale the distance to match wall distance scale
                     double scaledDist = currentDist * Math.Abs(Math.Cos(angle - player.Direction));
-                    
+
                     float ceilingShade = CalculateShade(scaledDist);
                     float floorShade = ceilingShade; // Use the same shade for both
 
@@ -267,7 +250,7 @@ namespace WolfRender
                     var (floorTexX, floorTexY) = GetFloorTexCoord(x, y, angle + Math.PI);
                     int colorIdx = GetTextureValue(floorTexX, floorTexY, 0, (uint)textureSize.X, ceilingTexture);
                     int baseColor = colorPalette[colorIdx];
-                    
+
                     // Apply ceiling shading
                     pixels[xOffset + y * (int)windowWidth] = Tools.PackColor(
                         (byte)((baseColor >> 16 & 0xFF) * ceilingShade),
@@ -280,7 +263,7 @@ namespace WolfRender
                     (floorTexX, floorTexY) = GetFloorTexCoord(x, floorY, angle);
                     colorIdx = GetTextureValue(floorTexX, floorTexY, 0, (uint)textureSize.X, floorTexture);
                     baseColor = colorPalette[colorIdx];
-                    
+
                     // Apply floor shading
                     pixels[xOffset + floorY * (int)windowWidth] = Tools.PackColor(
                         (byte)((baseColor >> 16 & 0xFF) * floorShade),
@@ -290,6 +273,11 @@ namespace WolfRender
                 }
             });
 
+            render(target, states);
+        }
+
+        private void render(RenderTarget target, RenderStates states)
+        {
             Buffer.BlockCopy(pixels, 0, bytes, 0, bytes.Length);
             texture.Update(bytes);
             target.Draw(sprite, states);
