@@ -297,12 +297,6 @@ namespace WolfRender
             // After drawing the main view, draw the minimap
             target.Draw(minimapBackground);
             target.Draw(minimapSprite);
-
-            // Update and draw player position on minimap
-            playerDot.Position = new Vector2f(
-                minimapSprite.Position.X + (player.Position.X * MINIMAP_SCALE),
-                minimapSprite.Position.Y + (player.Position.Y * MINIMAP_SCALE)
-            );
             target.Draw(playerDot);
         }
 
@@ -316,6 +310,12 @@ namespace WolfRender
         protected override void OnUpdate(float time)
         {
             lightMultiplier = Math.Abs(Math.Sin(Instance.TotalGameTime.AsSeconds()));
+
+            // Update and draw player position on minimap
+            playerDot.Position = new Vector2f(
+                minimapSprite.Position.X + (player.Position.X * MINIMAP_SCALE),
+                minimapSprite.Position.Y + (player.Position.Y * MINIMAP_SCALE)
+            );
         }
 
         //public override void Dispose()
