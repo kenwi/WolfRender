@@ -128,13 +128,14 @@ namespace WolfRender
         private float CalculateShade(double distance)
         {
             // Adjust these values to fine-tune the shading
-            const float maxDistance = 16.0f;  // Increased for better floor visibility
+            const float maxDistance = 64.0f;  // Increased for better floor visibility
             const float minShade = 0.1f;     // Darker minimum
             
             // Add exponential falloff for more dramatic distance shading
-            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 2.0);
+            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 3.0);
             return Math.Max(minShade, shade);
         }
+
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
