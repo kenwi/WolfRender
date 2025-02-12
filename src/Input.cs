@@ -16,6 +16,12 @@ namespace WolfRender
             Game.Instance.Window.SetMouseCursorVisible(false);
             Game.Instance.Window.SetMouseCursorGrabbed(true);
             Game.Instance.Window.Closed += (s, e) => Game.Instance.Window.Close();
+            Game.Instance.Window.MouseWheelScrolled += (s, e) =>
+            {
+                Game.Instance.MapRenderer.Fov += e.Delta * 0.1f;
+                Game.Instance.MapRenderer.FovHalf = Game.Instance.MapRenderer.Fov * 0.5f;
+                Game.Instance.MapRenderer.UpdateFovCone();
+            };
         }
 
         public void Update(float dt)

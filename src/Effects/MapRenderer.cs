@@ -12,11 +12,12 @@ namespace WolfRender
         Vector2u textureSize;
         Texture texture;
 
-        public float Fov { get; set; } = (float)Math.PI / 3.0f;
+        public float Fov { get; set; } = (float)Math.PI / 4.0f;
+        public  double FovHalf { get; set; }
         public Map Map { get => map; }
 
         int[] pixels;
-        private double fovHalf;
+
         private int halfHeight;
         private int textureMask;
         byte[] bytes;
@@ -26,7 +27,8 @@ namespace WolfRender
 
         private RectangleShape minimapBackground;
         private Sprite minimapSprite;
-        private CircleShape playerDot;
+        private readonly CircleShape playerDot;
+        private ConvexShape playerFov;
         private const float MINIMAP_SCALE = 4.0f;  // Adjust this to change minimap size
 
         readonly int[] colorPalette = {
@@ -94,7 +96,7 @@ namespace WolfRender
             pixels = new int[windowWidth * windowHeight];
 
             // Precalculate constants
-            fovHalf = Fov * 0.5;
+            FovHalf = Fov * 0.5;
             halfHeight = (int)windowHeight / 2;
             textureMask = (int)textureSize.X - 1;
 
@@ -109,8 +111,25 @@ namespace WolfRender
             minimapSprite.Color = new Color(255, 255, 255, 64);  // Semi-transparent white
 
             playerDot = new CircleShape(2);  // 3px radius
-            playerDot.FillColor = new Color(0, 0, 128, 64);
-            playerDot.Origin = new Vector2f(2, 2);  // Center the dot
+            playerDot.FillColor = Color.Red;
+
+            playerFov = new ConvexShape(3);  // Triangle shape
+            playerFov.FillColor = new Color(0, 0, 128, 64);
+            UpdateFovCone();
+
+        }
+
+        public void UpdateFovCone()
+        {
+            float distanceToEdge = 20.0f; // Adjust this value as needed for your game
+
+            // Calculate the width of the triangle based on the FoV
+            float width = 2 * distanceToEdge * (float)Math.Tan(Fov / 2.0f);
+
+            // Set the points of the triangle
+            playerFov.SetPoint(0, new Vector2f(0, 0)); // Apex of the triangle
+            playerFov.SetPoint(1, new Vector2f(-width / 2, -distanceToEdge)); // Left point
+            playerFov.SetPoint(2, new Vector2f(width / 2, -distanceToEdge)); // Right point
         }
 
         int GetTextureValue(int x, int y, int idx, uint size, int[] textureArray) 
@@ -151,7 +170,7 @@ namespace WolfRender
             const float minShade = 0.1f;     // Darker minimum
             
             // Add exponential falloff for more dramatic distance shading
-            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 3.0);
+            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 8.0);
             return Math.Max(minShade, shade);
         }
 
@@ -160,7 +179,7 @@ namespace WolfRender
             // Use Parallel.For for the main ray casting loop
             Parallel.For(0, (int)windowWidth, x =>  // Explicit cast to int
             {
-                double angle = player.Direction - fovHalf + (x * Fov) / windowWidth;
+                double angle = player.Direction - FovHalf + (x * Fov) / windowWidth;
 
                 // Precalculate ray direction
                 double rayDirX = Math.Cos(angle);
@@ -297,6 +316,7 @@ namespace WolfRender
             // After drawing the main view, draw the minimap
             target.Draw(minimapBackground);
             target.Draw(minimapSprite);
+            target.Draw(playerFov);
             target.Draw(playerDot);
         }
 
@@ -312,9 +332,15 @@ namespace WolfRender
             lightMultiplier = Math.Abs(Math.Sin(Instance.TotalGameTime.AsSeconds()));
 
             // Update and draw player position on minimap
-            playerDot.Position = new Vector2f(
+            playerFov.Position = new Vector2f(
                 minimapSprite.Position.X + (player.Position.X * MINIMAP_SCALE),
                 minimapSprite.Position.Y + (player.Position.Y * MINIMAP_SCALE)
+            );
+            playerFov.Rotation = player.Direction * 180.0f / (float)Math.PI + 90.0f;  // Convert to degrees and offset
+
+            playerDot.Position = new Vector2f(
+                minimapSprite.Position.X + (player.Position.X * MINIMAP_SCALE) - playerDot.Radius,
+                minimapSprite.Position.Y + (player.Position.Y * MINIMAP_SCALE) - playerDot.Radius
             );
         }
 
