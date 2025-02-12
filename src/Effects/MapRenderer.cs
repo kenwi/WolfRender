@@ -17,6 +17,9 @@ namespace WolfRender
         public Map Map { get => map; }
 
         int[] pixels;
+        private double fovHalf;
+        private int halfHeight;
+        private int textureMask;
         byte[] bytes;
         Sprite sprite;
         uint windowWidth, windowHeight;
@@ -85,6 +88,12 @@ namespace WolfRender
             textureSize = new Vector2u(8, 8); // Since all textures are 8x8
             bytes = new byte[windowWidth * windowHeight * 4];
             sprite = new Sprite(texture);
+            pixels = new int[windowWidth * windowHeight];
+
+            // Precalculate constants
+            fovHalf = Fov * 0.5;
+            halfHeight = (int)windowHeight / 2;
+            textureMask = (int)textureSize.X - 1;
         }
 
         int GetWallTextureID(double hitx, double hity, int[] tex_walls)
@@ -146,14 +155,6 @@ namespace WolfRender
 
         protected override void OnDraw(RenderTarget target, RenderStates states)
         {
-            pixels = new int[windowWidth * windowHeight];
-            var depthBuffer = new float[windowWidth];
-
-            // Precalculate constants
-            double fovHalf = Fov * 0.5;
-            int halfHeight = (int)windowHeight / 2;
-            int textureMask = (int)textureSize.X - 1;
-
             // Use Parallel.For for the main ray casting loop
             Parallel.For(0, (int)windowWidth, x =>  // Explicit cast to int
             {
