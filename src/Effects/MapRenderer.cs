@@ -30,6 +30,7 @@ namespace WolfRender
         private readonly CircleShape playerDot;
         private ConvexShape playerFov;
         private const float MINIMAP_SCALE = 4.0f;  // Adjust this to change minimap size
+        Dictionary<int, float> zBuffer = new Dictionary<int, float>();
 
         readonly int[] colorPalette = {
             Tools.PackColor(0, 0, 0),         // 0: Black
@@ -116,7 +117,7 @@ namespace WolfRender
             playerFov = new ConvexShape(3);  // Triangle shape
             playerFov.FillColor = new Color(0, 0, 128, 64);
             UpdateFovCone();
-
+            CalculateZBuffer(); // Initialize the Z-buffer for floor/ceiling shading
         }
 
         public void UpdateFovCone()
@@ -275,8 +276,9 @@ namespace WolfRender
                 // Draw floor and ceiling with distance-based shading
                 for (int y = 0; y < drawStart; y++)
                 {
-                    // Calculate real distance to the floor/ceiling point
-                    double currentDist = Math.Abs(windowHeight / (2.0 * y - windowHeight)); // Ensure it's positive
+                    // Lookup distance shade to the floor/ceiling from zBuffer
+                    float ceilingShade = zBuffer[y];
+                    float floorShade = ceilingShade;
 
                     // Scale the distance to match wall distance scale
                     double scaledDist = currentDist * Math.Abs(Math.Cos(angle - player.Direction));
@@ -313,11 +315,14 @@ namespace WolfRender
 
             render(target, states);
 
-            // After drawing the main view, draw the minimap
-            target.Draw(minimapBackground);
-            target.Draw(minimapSprite);
-            target.Draw(playerFov);
-            target.Draw(playerDot);
+        private void CalculateZBuffer()
+        {
+            for (int y=0; y<windowHeight; y++)
+            {
+                double currentDist = Math.Abs(windowHeight / (2.0 * y - windowHeight)); // Ensure it's positive
+                float ceilingShade = CalculateShade(currentDist);
+                zBuffer[y] = ceilingShade;
+            }
         }
 
         private void render(RenderTarget target, RenderStates states)
