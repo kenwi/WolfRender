@@ -30,7 +30,7 @@ namespace WolfRender
         private readonly CircleShape playerDot;
         private ConvexShape playerFov;
         private const float MINIMAP_SCALE = 4.0f;  // Adjust this to change minimap size
-        Dictionary<int, float> zBuffer = new Dictionary<int, float>();
+        private float[] zBuffer;
 
         readonly int[] colorPalette = {
             Tools.PackColor(0, 0, 0),         // 0: Black
@@ -317,6 +317,8 @@ namespace WolfRender
 
         private void CalculateZBuffer()
         {
+            zBuffer = new float[windowHeight];
+
             for (int y=0; y<windowHeight; y++)
             {
                 double currentDist = Math.Abs(windowHeight / (2.0 * y - windowHeight)); // Ensure it's positive
