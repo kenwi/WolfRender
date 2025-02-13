@@ -39,8 +39,24 @@ namespace WolfRender
         private void PlayerOptions(float dt, Player player)
         {
             checkKeyAction(Keyboard.Key.Escape, () => Game.Instance.Window.Close());
-            checkKeyAction(Keyboard.Key.PageUp, () => player.Fov += dt);
-            checkKeyAction(Keyboard.Key.PageDown, () => player.Fov -= dt);
+            checkKeyAction(Keyboard.Key.PageUp, () => 
+            {
+                Game.Instance.MapRenderer.ShadingExp += 1.0f;
+                Game.Instance.MapRenderer.CalculateZBuffer();
+            });
+            checkKeyAction(Keyboard.Key.PageDown, () =>
+            {
+                if (Game.Instance.MapRenderer.ShadingExp <= 0.0f)
+                    return;
+
+                Game.Instance.MapRenderer.ShadingExp -= 1.0f;
+                Game.Instance.MapRenderer.CalculateZBuffer();
+            });
+            checkKeyAction(Keyboard.Key.Home, () =>
+            {
+                Game.Instance.MapRenderer.ShadingExp = 8.0f;
+                Game.Instance.MapRenderer.CalculateZBuffer();
+            });
 
             checkToggleAction(Keyboard.Key.H, () => Game.Instance.IsHelpMenuVisible = !Game.Instance.IsHelpMenuVisible);
             checkToggleAction(Keyboard.Key.L, () => Game.Instance.IsFramerateLimited = !Game.Instance.IsFramerateLimited);

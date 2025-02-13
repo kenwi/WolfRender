@@ -15,6 +15,7 @@ namespace WolfRender
         public float Fov { get; set; } = (float)Math.PI / 4.0f;
         public  double FovHalf { get; set; }
         public Map Map { get => map; }
+        public double ShadingExp { get; set; } = 8.0;
 
         int[] pixels;
 
@@ -94,7 +95,6 @@ namespace WolfRender
             screenSprite = new Sprite(screenTexture);
             textureSize = new Vector2u(8, 8); // Since all textures are 8x8
             bytes = new byte[windowWidth * windowHeight * 4];
-            sprite = new Sprite(texture);
             pixels = new int[windowWidth * windowHeight];
 
             // Precalculate constants
@@ -172,7 +172,7 @@ namespace WolfRender
             const float minShade = 0.1f;     // Darker minimum
             
             // Add exponential falloff for more dramatic distance shading
-            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 8.0);
+            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), ShadingExp);
             return Math.Max(minShade, shade);
         }
 
@@ -311,7 +311,7 @@ namespace WolfRender
             render(target, states);
         }
 
-        private void CalculateZBuffer()
+        public void CalculateZBuffer()
         {
             zBuffer = new float[windowHeight];
 
@@ -350,13 +350,5 @@ namespace WolfRender
                 minimapSprite.Position.Y + (player.Position.Y * MINIMAP_SCALE) - playerDot.Radius
             );
         }
-
-        //public override void Dispose()
-        //{
-        //    base.Dispose();
-        //    minimapBackground.Dispose();
-        //    minimapSprite.Dispose();
-        //    playerDot.Dispose();
-        //}
     }
 }
