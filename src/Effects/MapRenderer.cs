@@ -257,17 +257,19 @@ namespace WolfRender
                 float wallShade = CalculateShade(perpWallDist);
 
                 // Draw walls with shading
+                int width = (int)windowWidth;
                 int xOffset = x;
+                uint textureSizeX = textureSize.X;
                 for (int y = drawStart; y < drawEnd; y++)
                 {
                     int wallTexY = (int)texPos & textureMask;
                     texPos += step;
 
-                    int colorIdx = GetTextureValue(wallTexX, wallTexY, 0, (uint)textureSize.X, wallTexture);
+                    int colorIdx = GetTextureValue(wallTexX, wallTexY, 0, textureSizeX, wallTexture);
                     int baseColor = colorPalette[colorIdx];
 
                     // Apply wall shading
-                    pixels[xOffset + y * (int)windowWidth] = Tools.PackColor(
+                    pixels[xOffset + y * width] = Tools.PackColor(
                         (byte)((baseColor >> 16 & 0xFF) * wallShade),
                         (byte)((baseColor >> 8 & 0xFF) * wallShade),
                         (byte)((baseColor & 0xFF) * wallShade)
@@ -275,6 +277,7 @@ namespace WolfRender
                 }
 
                 // Draw floor and ceiling with distance-based shading
+                int height = (int)windowHeight;
                 for (int y = 0; y < drawStart; y++)
                 {
                     // Lookup distance shade to the floor/ceiling from zBuffer
@@ -283,28 +286,26 @@ namespace WolfRender
 
                     // Ceiling
                     var (floorTexX, floorTexY) = GetFloorTexCoord(x, y, angle + Math.PI);
-                    int colorIdx = GetTextureValue(floorTexX, floorTexY, 0, (uint)textureSize.X, ceilingTexture);
+                    int colorIdx = GetTextureValue(floorTexX, floorTexY, 0, textureSizeX, ceilingTexture);
                     int baseColor = colorPalette[colorIdx];
 
                     // Apply ceiling shading
-                    pixels[xOffset + y * (int)windowWidth] = Tools.PackColor(
-                        (byte)((baseColor >> 16 & 0xFF) * ceilingShade),
-                        (byte)((baseColor >> 8 & 0xFF) * ceilingShade),
-                        (byte)((baseColor & 0xFF) * ceilingShade)
-                    );
+                    byte r = (byte)((baseColor >> 16 & 0xFF) * ceilingShade);
+                    byte g = (byte)((baseColor >> 8 & 0xFF) * ceilingShade);
+                    byte b = (byte)((baseColor & 0xFF) * ceilingShade);
+                    pixels[xOffset + y * width] = Tools.PackColor(r, g, b);
 
                     // Floor
-                    int floorY = (int)windowHeight - y - 1;
+                    int floorY = height - y - 1;
                     (floorTexX, floorTexY) = GetFloorTexCoord(x, floorY, angle);
-                    colorIdx = GetTextureValue(floorTexX, floorTexY, 0, (uint)textureSize.X, floorTexture);
+                    colorIdx = GetTextureValue(floorTexX, floorTexY, 0, textureSizeX, floorTexture);
                     baseColor = colorPalette[colorIdx];
 
                     // Apply floor shading
-                    pixels[xOffset + floorY * (int)windowWidth] = Tools.PackColor(
-                        (byte)((baseColor >> 16 & 0xFF) * floorShade),
-                        (byte)((baseColor >> 8 & 0xFF) * floorShade),
-                        (byte)((baseColor & 0xFF) * floorShade)
-                    );
+                    r = (byte)((baseColor >> 16 & 0xFF) * floorShade);
+                    g = (byte)((baseColor >> 8 & 0xFF) * floorShade);
+                    b = (byte)((baseColor & 0xFF) * floorShade);
+                    pixels[xOffset + floorY * width] = Tools.PackColor(r, g, b);
                 }
             });
 
