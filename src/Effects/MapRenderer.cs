@@ -31,7 +31,7 @@ namespace WolfRender
         private Sprite minimapSprite;
         private readonly CircleShape playerDot;
         private ConvexShape playerFov;
-        private const float MINIMAP_SCALE = 4.0f;  // Adjust this to change minimap size
+        private const float MINIMAP_SCALE = 4.0f;
         private float[] zBuffer;
 
         readonly int[] colorPalette = {
@@ -124,7 +124,7 @@ namespace WolfRender
 
         public void UpdateFovCone()
         {
-            float distanceToEdge = 20.0f; // Adjust this value as needed for your game
+            float distanceToEdge = 20.0f;
 
             // Calculate the width of the triangle based on the FoV
             float width = 2 * distanceToEdge * (float)Math.Tan(Fov / 2.0f);
@@ -137,33 +137,6 @@ namespace WolfRender
 
         int GetTextureValue(int x, int y, int idx, uint size, int[] textureArray) 
             => textureArray[x + idx * size + y * size];
-
-        // Replace the GetFloorTexCoord method with this perspective-correct version
-        (int, int) GetFloorTexCoord8x8(int x, int y, double angle)
-        {
-            // Use the absolute angle directly - no need to adjust for player direction since it's already included
-            double rayDirX = Math.Cos(angle);
-            double rayDirY = Math.Sin(angle);
-
-            // Position of the camera plane relative to screen height
-            int screenHeight = (int)windowHeight;
-
-            // Current y position compared to the center of the screen (the horizon)
-            double currentDist = screenHeight / (2.0 * y - screenHeight);
-
-            // Calculate the real world coordinates of the point on the floor
-            double floorX = player.Position.X + currentDist * rayDirX;
-            double floorY = player.Position.Y + currentDist * rayDirY;
-
-            // Get the texture coordinates
-            int texX = (int)(floorX * textureSize.X) % (int)textureSize.X;
-            int texY = (int)(floorY * textureSize.Y) % (int)textureSize.Y;
-
-            if (texX < 0) texX += (int)textureSize.X;
-            if (texY < 0) texY += (int)textureSize.Y;
-
-            return (texX, texY);
-        }
 
         (int, int) GetFloorTexCoord64x64(int x, int y, double angle)
         {
@@ -190,10 +163,9 @@ namespace WolfRender
 
             return (texX, texY);
         }
-        // Modify the CalculateShade method to better handle different distance ranges
+
         private float CalculateShade(double distance)
         {
-            // Adjust these values to fine-tune the shading
             const float maxDistance = 64.0f;  // Increased for better floor visibility
             const float minShade = 0.1f;     // Darker minimum
             
@@ -290,10 +262,6 @@ namespace WolfRender
                     int wallTexY = (int)texPos & (64 - 1); // Use 64 for texture size
                     texPos += step;
 
-                    // Ensure wallTexX and wallTexY are within bounds
-                    wallTexX = Math.Clamp(wallTexX, 0, 63); // Ensure wallTexX is between 0 and 63
-                    wallTexY = Math.Clamp(wallTexY, 0, 63); // Ensure wallTexY is between 0 and 63
-
                     // Get the color from the BlueStone texture
                     int colorIdx = wallTexX + wallTexY * 64; // Corrected index calculation
                     int wallColor = textureLoader.BlueStone[colorIdx];
@@ -304,7 +272,6 @@ namespace WolfRender
                     pixels[xOffset + y * (int)windowWidth] = Tools.PackColor(r, g, b);
                 }
 
-                Vector2u textureSize64x64 = new Vector2u(64, 64);
                 // Draw floor and ceiling with distance-based shading
                 int height = (int)windowHeight;
                 for (int y = 0; y < drawStart; y++)
@@ -316,10 +283,6 @@ namespace WolfRender
                     // Ceiling
                     int ceilingY = height - y - 1;
                     var (ceilingTexX, ceilingTexY) = GetFloorTexCoord64x64(x, ceilingY, angle);
-
-                    // Scale the texture coordinates to fit the 64x64 texture size
-                    ceilingTexX = (int)(ceilingTexX * (64.0 / textureSize64x64.X)) % 64; // Ensure correct scaling
-                    ceilingTexY = (int)(ceilingTexY * (64.0 / textureSize64x64.Y)) % 64; // Ensure correct scaling
 
                     // Get the color from the GreyStone texture
                     int ceilingColorIdx = ceilingTexX + ceilingTexY * 64;
@@ -334,13 +297,9 @@ namespace WolfRender
                     // Floor
                     int floorY = height - y - 1;
                     var (floorTexX, floorTexY) = GetFloorTexCoord64x64(x, floorY, angle);
-                    
-                    // Scale the texture coordinates to fit the 64x64 texture size
-                    floorTexX = (int)(floorTexX * (64.0 / textureSize64x64.X)) % 64; // Ensure correct scaling
-                    floorTexY = (int)(floorTexY * (64.0 / textureSize64x64.Y)) % 64; // Ensure correct scaling
 
                     // Get the color from the GreyStone texture
-                    int floorColorIdx = floorTexX + floorTexY * 64; // Correct index calculation for GreyStone
+                    int floorColorIdx = floorTexX + floorTexY * 64;
                     int floorColor = textureLoader.GreyStone[floorColorIdx];
 
                     // Apply floor shading
