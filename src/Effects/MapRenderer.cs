@@ -12,7 +12,7 @@ namespace WolfRender
         Vector2u textureSize;
         Texture screenTexture;
 
-        public float Fov { get; set; } = (float)Math.PI / 4.0f;
+        public float Fov { get; set; } = (float)Math.PI / 2.0f;
         public  double FovHalf { get; set; }
         public Map Map { get => map; }
         public double ShadingExp { get; set; } = 8.0;
@@ -26,6 +26,7 @@ namespace WolfRender
         uint windowWidth, windowHeight;
         double lightMultiplier = 1.0f;
 
+        private TextureLoader textureLoader = new TextureLoader();
         private RectangleShape minimapBackground;
         private Sprite minimapSprite;
         private readonly CircleShape playerDot;
@@ -90,7 +91,7 @@ namespace WolfRender
             var view = Instance.Window.GetView();
             windowWidth = (uint)view.Size.X;
             windowHeight = (uint)view.Size.Y;
-
+            
             screenTexture = new Texture(windowWidth, windowHeight);
             screenSprite = new Sprite(screenTexture);
             textureSize = new Vector2u(8, 8); // Since all textures are 8x8
@@ -138,7 +139,7 @@ namespace WolfRender
             => textureArray[x + idx * size + y * size];
 
         // Replace the GetFloorTexCoord method with this perspective-correct version
-        (int, int) GetFloorTexCoord(int x, int y, double angle)
+        (int, int) GetFloorTexCoord8x8(int x, int y, double angle)
         {
             // Use the absolute angle directly - no need to adjust for player direction since it's already included
             double rayDirX = Math.Cos(angle);
@@ -164,6 +165,31 @@ namespace WolfRender
             return (texX, texY);
         }
 
+        (int, int) GetFloorTexCoord64x64(int x, int y, double angle)
+        {
+            // Use the absolute angle directly - no need to adjust for player direction since it's already included
+            double rayDirX = Math.Cos(angle);
+            double rayDirY = Math.Sin(angle);
+
+            // Position of the camera plane relative to screen height
+            int screenHeight = (int)windowHeight;
+
+            // Current y position compared to the center of the screen (the horizon)
+            double currentDist = screenHeight / (2.0 * y - screenHeight);
+
+            // Calculate the real world coordinates of the point on the floor
+            double floorX = player.Position.X + currentDist * rayDirX;
+            double floorY = player.Position.Y + currentDist * rayDirY;
+
+            // Get the texture coordinates
+            int texX = (int)(floorX * 64) % 64;
+            int texY = (int)(floorY * 64) % 64;
+
+            if (texX < 0) texX += 64;
+            if (texY < 0) texY += 64;
+
+            return (texX, texY);
+        }
         // Modify the CalculateShade method to better handle different distance ranges
         private float CalculateShade(double distance)
         {
@@ -245,37 +271,40 @@ namespace WolfRender
                     : player.Position.X + perpWallDist * rayDirX;
                 wallX -= Math.Floor(wallX);
 
-                int wallTexX = (int)(wallX * textureSize.X) & textureMask;
+                // Calculate texture coordinates based on the 64x64 texture size
+                int wallTexX = (int)(wallX * 64) & (64 - 1); // Use 64 for texture size
                 if ((side == 0 && rayDirX > 0) || (side == 1 && rayDirY < 0))
-                    wallTexX = ((int)textureSize.X - 1) - wallTexX;
+                    wallTexX = (64 - 1) - wallTexX;
 
                 // Precalculate texture step and position
-                double step = textureSize.Y / (double)lineHeight;
+                double step = 64.0 / (double)lineHeight; // Use 64 for texture size
                 double texPos = (drawStart - halfHeight + lineHeight / 2.0) * step;
 
                 // Calculate wall shading using perpendicular distance
                 float wallShade = CalculateShade(perpWallDist);
 
-                // Draw walls with shading
-                int width = (int)windowWidth;
+                // Draw walls with BlueStone texture
                 int xOffset = x;
-                uint textureSizeX = textureSize.X;
                 for (int y = drawStart; y < drawEnd; y++)
                 {
-                    int wallTexY = (int)texPos & textureMask;
+                    int wallTexY = (int)texPos & (64 - 1); // Use 64 for texture size
                     texPos += step;
 
-                    int colorIdx = GetTextureValue(wallTexX, wallTexY, 0, textureSizeX, wallTexture);
-                    int baseColor = colorPalette[colorIdx];
+                    // Ensure wallTexX and wallTexY are within bounds
+                    wallTexX = Math.Clamp(wallTexX, 0, 63); // Ensure wallTexX is between 0 and 63
+                    wallTexY = Math.Clamp(wallTexY, 0, 63); // Ensure wallTexY is between 0 and 63
 
-                    // Apply wall shading
-                    pixels[xOffset + y * width] = Tools.PackColor(
-                        (byte)((baseColor >> 16 & 0xFF) * wallShade),
-                        (byte)((baseColor >> 8 & 0xFF) * wallShade),
-                        (byte)((baseColor & 0xFF) * wallShade)
-                    );
+                    // Get the color from the BlueStone texture
+                    int colorIdx = wallTexX + wallTexY * 64; // Corrected index calculation
+                    int wallColor = textureLoader.BlueStone[colorIdx];
+
+                    byte r = (byte)((wallColor & 0xFF) * wallShade);
+                    byte g = (byte)((wallColor >> 8 & 0xFF) * wallShade);
+                    byte b = (byte)((wallColor >> 16 & 0xFF) * wallShade);
+                    pixels[xOffset + y * (int)windowWidth] = Tools.PackColor(r, g, b);
                 }
 
+                Vector2u textureSize64x64 = new Vector2u(64, 64);
                 // Draw floor and ceiling with distance-based shading
                 int height = (int)windowHeight;
                 for (int y = 0; y < drawStart; y++)
@@ -285,27 +314,40 @@ namespace WolfRender
                     float floorShade = ceilingShade;
 
                     // Ceiling
-                    var (floorTexX, floorTexY) = GetFloorTexCoord(x, y, angle + Math.PI);
-                    int colorIdx = GetTextureValue(floorTexX, floorTexY, 0, textureSizeX, ceilingTexture);
-                    int baseColor = colorPalette[colorIdx];
+                    int ceilingY = height - y - 1;
+                    var (ceilingTexX, ceilingTexY) = GetFloorTexCoord64x64(x, ceilingY, angle);
+
+                    // Scale the texture coordinates to fit the 64x64 texture size
+                    ceilingTexX = (int)(ceilingTexX * (64.0 / textureSize64x64.X)) % 64; // Ensure correct scaling
+                    ceilingTexY = (int)(ceilingTexY * (64.0 / textureSize64x64.Y)) % 64; // Ensure correct scaling
+
+                    // Get the color from the GreyStone texture
+                    int ceilingColorIdx = ceilingTexX + ceilingTexY * 64;
+                    int ceilingColor = textureLoader.GreyStone[ceilingColorIdx];
 
                     // Apply ceiling shading
-                    byte r = (byte)((baseColor >> 16 & 0xFF) * ceilingShade);
-                    byte g = (byte)((baseColor >> 8 & 0xFF) * ceilingShade);
-                    byte b = (byte)((baseColor & 0xFF) * ceilingShade);
-                    pixels[xOffset + y * width] = Tools.PackColor(r, g, b);
+                    byte r = (byte)((ceilingColor & 0xFF) * ceilingShade);
+                    byte g = (byte)((ceilingColor >> 8 & 0xFF) * ceilingShade);
+                    byte b = (byte)((ceilingColor >> 16 & 0xFF) * ceilingShade);
+                    pixels[xOffset + y * (int)windowWidth] = Tools.PackColor(r, g, b);
 
                     // Floor
                     int floorY = height - y - 1;
-                    (floorTexX, floorTexY) = GetFloorTexCoord(x, floorY, angle);
-                    colorIdx = GetTextureValue(floorTexX, floorTexY, 0, textureSizeX, floorTexture);
-                    baseColor = colorPalette[colorIdx];
+                    var (floorTexX, floorTexY) = GetFloorTexCoord64x64(x, floorY, angle);
+                    
+                    // Scale the texture coordinates to fit the 64x64 texture size
+                    floorTexX = (int)(floorTexX * (64.0 / textureSize64x64.X)) % 64; // Ensure correct scaling
+                    floorTexY = (int)(floorTexY * (64.0 / textureSize64x64.Y)) % 64; // Ensure correct scaling
+
+                    // Get the color from the GreyStone texture
+                    int floorColorIdx = floorTexX + floorTexY * 64; // Correct index calculation for GreyStone
+                    int floorColor = textureLoader.GreyStone[floorColorIdx];
 
                     // Apply floor shading
-                    r = (byte)((baseColor >> 16 & 0xFF) * floorShade);
-                    g = (byte)((baseColor >> 8 & 0xFF) * floorShade);
-                    b = (byte)((baseColor & 0xFF) * floorShade);
-                    pixels[xOffset + floorY * width] = Tools.PackColor(r, g, b);
+                    r = (byte)((floorColor & 0xFF) * floorShade);
+                    g = (byte)((floorColor >> 8 & 0xFF) * floorShade);
+                    b = (byte)((floorColor >> 16 & 0xFF) * floorShade);
+                    pixels[xOffset + floorY * (int)windowWidth] = Tools.PackColor(r, g, b);
                 }
             });
 
