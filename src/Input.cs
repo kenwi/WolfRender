@@ -41,7 +41,7 @@ namespace WolfRender
             checkKeyAction(Keyboard.Key.Escape, () => Game.Instance.Window.Close());
             checkKeyAction(Keyboard.Key.PageUp, () => 
             {
-                Game.Instance.MapRenderer.ShadingExp += 1.0f;
+                Game.Instance.MapRenderer.ShadingExp += 5.0f * dt;
                 Game.Instance.MapRenderer.CalculateZBuffer();
             });
             checkKeyAction(Keyboard.Key.PageDown, () =>
@@ -49,7 +49,7 @@ namespace WolfRender
                 if (Game.Instance.MapRenderer.ShadingExp <= 0.0f)
                     return;
 
-                Game.Instance.MapRenderer.ShadingExp -= 1.0f;
+                Game.Instance.MapRenderer.ShadingExp -= 5.0f * dt;
                 Game.Instance.MapRenderer.CalculateZBuffer();
             });
             checkKeyAction(Keyboard.Key.Home, () =>
