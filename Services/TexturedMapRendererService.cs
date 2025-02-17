@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using SFML.Graphics;
 using SFML.System;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using WolfRender.Interfaces;
 using WolfRender.Models.Configuration;
@@ -31,6 +32,7 @@ namespace WolfRender.Services
         private int _halfHeight;
         private int _resolutionY;
         private int _resolutionX;
+        List<int[]> _textures;
 
         public TexturedMapRendererService(
             ILogger<TexturedMapRendererService> logger,
@@ -51,12 +53,18 @@ namespace WolfRender.Services
 
         public void Init()
         {
-            _textureService.LoadTexture("bluestone", "Assets/greystone.png");
+            _textures = new List<int[]>();
+            _textureService.LoadTexture("greystone", "Assets/greystone.png");
+            _textures.Add(_textureService.GetTextureArray("greystone"));
+            _greystonePixels = _textureService.GetTextureArray("greystone");
+
+            _textureService.LoadTexture("bluestone", "Assets/bluestone.png");
+            _textures.Add(_textureService.GetTextureArray("bluestone"));
             _bluestonePixels = _textureService.GetTextureArray("bluestone");
 
-            _textureService.LoadTexture("greystone", "Assets/greystone.png");
-            _greystonePixels = _textureService.GetTextureArray("greystone");
-            
+            _textureService.LoadTexture("redbrick", "Assets/redbrick.png");
+            _textures.Add(_textureService.GetTextureArray("redbrick"));
+
             _textureService.LoadTexture("mossy", "Assets/mossy.png");
             _mossyPixels = _textureService.GetTextureArray("mossy");
 
@@ -110,6 +118,7 @@ namespace WolfRender.Services
                 // Perform DDA
                 bool hit = false;
                 int side = 0;
+                int textureIdx = 0;
                 while (!hit)
                 {
                     if (sideDistX < sideDistY)
@@ -125,7 +134,8 @@ namespace WolfRender.Services
                         side = 1;
                     }
 
-                    if (_mapService.Get(new Vector2i(mapX, mapY)) > 0)
+                    textureIdx = _mapService.Get(new Vector2i(mapX, mapY));
+                    if (textureIdx > 0)
                         hit = true;
                 }
 
@@ -166,7 +176,8 @@ namespace WolfRender.Services
 
                     // Get the color from the BlueStone texture
                     int colorIdx = wallTexX + wallTexY * _textureSize; // Corrected index calculation
-                    int wallColor = _bluestonePixels[colorIdx];
+                    int[] currentTexture = _textures[textureIdx];
+                    int wallColor = currentTexture[colorIdx];
 
                     byte r = (byte)((wallColor & 0xFF) * wallShade);
                     byte g = (byte)((wallColor >> 8 & 0xFF) * wallShade);
@@ -187,6 +198,7 @@ namespace WolfRender.Services
 
                     // Get the color from the GreyStone texture
                     int ceilingColorIdx = ceilingTexX + ceilingTexY * _textureSize;
+
                     int ceilingColor = _mossyPixels[ceilingColorIdx];
 
                     // Apply ceiling shading

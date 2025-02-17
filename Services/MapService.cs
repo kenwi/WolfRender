@@ -62,6 +62,24 @@ namespace WolfRender.Services
 
                     // If pixel is darker than 50% gray, it's a wall
                     data[x, y] = brightness < 0.5f ? 1 : 0;
+
+                    // No wall
+                    if (pixel.R == 255 && pixel.G == 255 && pixel.B == 255)
+                    {
+                        data[x, y] = 0;
+                    }
+
+                    // Default wall (greystone)
+                    if (pixel.R == 0 && pixel.G == 0 && pixel.B == 0)
+                    {
+                        data[x, y] = 1;
+                    }
+
+                    // redstone
+                    if(pixel.R == 255 && pixel.G == 0 && pixel.B == 0)
+                    {
+                        data[x, y] = 2;
+                    }
                 }
             }
             return data;
