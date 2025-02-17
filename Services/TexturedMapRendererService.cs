@@ -3,24 +3,23 @@ using Microsoft.Extensions.Options;
 using SFML.Graphics;
 using SFML.System;
 using System;
-using System.Numerics;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using WolfRender.Interfaces;
-using WolfRender.Models;
 using WolfRender.Models.Configuration;
 
 namespace WolfRender.Services
 {
     internal class TexturedMapRendererService : Drawable, IMapRenderer
     {
-        private ILogger<TexturedMapRendererService> _logger;
-        private ITextureService _textureService;
-        private WindowConfiguration _windowConfiguration;
-        private GameConfiguration _gameConfiguration;
-        private IPlayerService _playerService;
-        private IMapService _mapService;
+        private readonly ILogger<TexturedMapRendererService> _logger;
+        private readonly ITextureService _textureService;
+        private readonly WindowConfiguration _windowConfiguration;
+        private readonly GameConfiguration _gameConfiguration;
+        private readonly IPlayerService _playerService;
+        private readonly IMapService _mapService;
+        
         private IPlayer _player;
+        private int _textureSize;
         private int[] _bluestonePixels;
         private int[] _mossyPixels;
         private Texture _texture;
@@ -52,13 +51,13 @@ namespace WolfRender.Services
 
         public void Init()
         {
-            _textureService.LoadTexture("bluestone", "Textures/bluestone.png");
+            _textureService.LoadTexture("bluestone", "Assets/bluestone.png");
             _bluestonePixels = _textureService.GetTextureArray("bluestone");
 
-            _textureService.LoadTexture("greystone", "Textures/greystone.png");
+            _textureService.LoadTexture("greystone", "Assets/greystone.png");
             _greystonePixels = _textureService.GetTextureArray("greystone");
             
-            _textureService.LoadTexture("mossy", "Textures/mossy.png");
+            _textureService.LoadTexture("mossy", "Assets/mossy.png");
             _mossyPixels = _textureService.GetTextureArray("mossy");
 
             _resolutionX = _gameConfiguration.Resolution.X;
@@ -148,13 +147,13 @@ namespace WolfRender.Services
                 wallX -= Math.Floor(wallX);
 
                 // Calculate texture coordinates based on the 64x64 texture size
-                int wallTexX = (int)(wallX * 64) & (64 - 1); // Use 64 for texture size
+                int wallTexX = (int)(wallX * _textureSize) & (_textureSize - 1); // Use 64 for texture size
                 if ((side == 0 && rayDirX > 0) || (side == 1 && rayDirY < 0))
-                    wallTexX = (64 - 1) - wallTexX;
+                    wallTexX = (_textureSize - 1) - wallTexX;
 
                 // Precalculate texture step and position
-                double step = 64.0 / (double)lineHeight; // Use 64 for texture size
-                double texPos = (drawStart - halfHeight + lineHeight / 2.0) * step;
+                double step = _textureSize / (double)lineHeight; // Use 64 for texture size
+                double texPos = (drawStart - _halfHeight + lineHeight / 2.0) * step;
 
                 // Calculate wall shading using perpendicular distance
                 float wallShade = CalculateShade(perpWallDist);
@@ -163,11 +162,11 @@ namespace WolfRender.Services
                 int xOffset = x;
                 for (int y = drawStart; y < drawEnd; y++)
                 {
-                    int wallTexY = (int)texPos & (64 - 1); // Use 64 for texture size
+                    int wallTexY = (int)texPos & (_textureSize - 1); // Use 64 for texture size
                     texPos += step;
 
                     // Get the color from the BlueStone texture
-                    int colorIdx = wallTexX + wallTexY * 64; // Corrected index calculation
+                    int colorIdx = wallTexX + wallTexY * _textureSize; // Corrected index calculation
                     int wallColor = _bluestonePixels[colorIdx];
 
                     byte r = (byte)((wallColor & 0xFF) * wallShade);
@@ -177,7 +176,6 @@ namespace WolfRender.Services
                 }
 
                 // Draw floor and ceiling with distance-based shading
-                int height = (int)_gameConfiguration.Resolution.Y;
                 for (int y = 0; y < drawStart; y++)
                 {
                     // Lookup distance shade to the floor/ceiling from zBuffer
@@ -189,7 +187,7 @@ namespace WolfRender.Services
                     var (ceilingTexX, ceilingTexY) = GetFloorTexCoord64x64(x, ceilingY, angle);
 
                     // Get the color from the GreyStone texture
-                    int ceilingColorIdx = ceilingTexX + ceilingTexY * 64;
+                    int ceilingColorIdx = ceilingTexX + ceilingTexY * _textureSize;
                     int ceilingColor = _mossyPixels[ceilingColorIdx];
 
                     // Apply ceiling shading
@@ -203,7 +201,7 @@ namespace WolfRender.Services
                     var (floorTexX, floorTexY) = GetFloorTexCoord64x64(x, floorY, angle);
 
                     // Get the color from the GreyStone texture
-                    int floorColorIdx = floorTexX + floorTexY * 64;
+                    int floorColorIdx = floorTexX + floorTexY * _textureSize;
                     int floorColor = _greystonePixels[floorColorIdx];
 
                     // Apply floor shading
@@ -230,7 +228,7 @@ namespace WolfRender.Services
             const float minShade = 0.1f;     // Darker minimum
 
             // Add exponential falloff for more dramatic distance shading
-            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 2);
+            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 8);
             return Math.Max(minShade, shade);
         }
 
@@ -240,9 +238,6 @@ namespace WolfRender.Services
             double rayDirX = Math.Cos(angle);
             double rayDirY = Math.Sin(angle);
 
-            // Position of the camera plane relative to screen height
-            int screenHeight = (int)_gameConfiguration.Resolution.Y;
-
             // Current y position compared to the center of the screen (the horizon)
             double currentDist = _resolutionY / (2.0 * y - _resolutionY);
 
@@ -251,11 +246,11 @@ namespace WolfRender.Services
             double floorY = _player.Position.Y + currentDist * rayDirY;
 
             // Get the texture coordinates
-            int texX = (int)(floorX * 64) % 64;
-            int texY = (int)(floorY * 64) % 64;
+            int texX = (int)(floorX * _textureSize) % _textureSize;
+            int texY = (int)(floorY * _textureSize) % _textureSize;
 
-            if (texX < 0) texX += 64;
-            if (texY < 0) texY += 64;
+            if (texX < 0) texX += _textureSize;
+            if (texY < 0) texY += _textureSize;
 
             return (texX, texY);
         }
