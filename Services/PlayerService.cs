@@ -2,7 +2,6 @@
 using SFML.System;
 using SFML.Window;
 using System;
-using System.Numerics;
 using System.Threading;
 using WolfRender.Interfaces;
 using WolfRender.Models;
@@ -13,9 +12,9 @@ namespace WolfRender.Services
     {
         public IPlayer Player => _player;
 
-        private IPlayer _player;
-        private ILogger<PlayerService> _logger;
-        private IMapService _mapService;
+        private readonly IPlayer _player;
+        private readonly ILogger<PlayerService> _logger;
+        private readonly IMapService _mapService;
         private IWindowService _windowService;
 
         // Movement properties
@@ -24,8 +23,7 @@ namespace WolfRender.Services
         private readonly float maxSpeed = 16.0f;
         private readonly float accelerationRate = 25.0f;
         private readonly float friction = 8.0f;
-        private readonly float rotationSpeed = 3.0f;
-        float _mouseSpeedMultiplier = 0.001f;
+        float _mouseSpeedMultiplier = 0.02f;
 
         public PlayerService(
             ILogger<PlayerService> logger,
@@ -46,27 +44,11 @@ namespace WolfRender.Services
 
         public void Update(float deltaTime)
         {
-            // Get input direction
-            Vector2f input = new Vector2f(0, 0);
+            // Get input
+            GetKeypressInput();
 
-            if (Input.IsKeyPressed(Keyboard.Key.W))
-                input.X += 1;
-            if (Input.IsKeyPressed(Keyboard.Key.S))
-                input.X -= 1;
-            if (Input.IsKeyPressed(Keyboard.Key.D))
-                input.Y += 1;
-            if (Input.IsKeyPressed(Keyboard.Key.A))
-                input.Y -= 1;
-
-            if (Input.IsKeyPressed(Keyboard.Key.Escape))
-            {
-                _windowService.StopAsync(CancellationToken.None);
-            }
-
-            if (Input.IsKeyPressed(Keyboard.Key.M))
-            {
-                _windowService.IsMouseVisible = !_windowService.IsMouseVisible;
-            }
+            // Get movement (WASD) input
+            Vector2f input = GetKeyboardInputDirection();
 
             // Calculate movement direction based on player's facing direction
             float cos = (float)Math.Cos(_player.Direction);
@@ -100,30 +82,40 @@ namespace WolfRender.Services
                 _player.Position.Y + velocity.Y * deltaTime
             );
 
-            //// Collision detection with walls
-            if (_mapService.Get(new Vector2i((int)newPosition.X, (int)_player.Position.Y)) == 0)
-                _player.Position = new Vector2f(newPosition.X, _player.Position.Y);
+            // Collision detection with walls
+            HandleCollision(newPosition);
 
-            if (_mapService.Get(new Vector2i((int)_player.Position.X, (int)newPosition.Y)) == 0)
-                _player.Position = new Vector2f(_player.Position.X, newPosition.Y);
+            // Get mouse delta and rotate player
+            HandleMouseRotation(deltaTime);
+        }
 
-            // Handle rotation
-            if (Input.IsKeyPressed(Keyboard.Key.Left))
-                _player.Direction -= rotationSpeed * deltaTime;
-            if (Input.IsKeyPressed(Keyboard.Key.Right))
-                _player.Direction += rotationSpeed * deltaTime;
+        private Vector2f GetKeyboardInputDirection()
+        {
+            Vector2f input = new Vector2f(0, 0);
 
-            // Handle mouse rotation
+            if (Input.IsKeyPressed(Keyboard.Key.W))
+                input.X += 1;
+            if (Input.IsKeyPressed(Keyboard.Key.S))
+                input.X -= 1;
+            if (Input.IsKeyPressed(Keyboard.Key.D))
+                input.Y += 1;
+            if (Input.IsKeyPressed(Keyboard.Key.A))
+                input.Y -= 1;
+
+            return input;
+        }
+
+        private void HandleMouseRotation(float deltaTime)
+        {
             if (_windowService.IsMouseVisible)
             {
                 return;
             }
 
-            // Get mouse delta and rotate player
             var mouseDelta = Mouse.GetPosition() - _windowService.WindowCenter;
             if (mouseDelta.X != 0)
             {
-                _player.Direction += _player.RotationSpeed * mouseDelta.X * _mouseSpeedMultiplier;
+                _player.Direction += _player.RotationSpeed * mouseDelta.X * _mouseSpeedMultiplier * deltaTime;
             }
 
             if (!_windowService.IsMouseVisible)
@@ -132,5 +124,26 @@ namespace WolfRender.Services
             }
         }
 
+        private void GetKeypressInput()
+        {
+            if (Input.IsKeyPressed(Keyboard.Key.Escape))
+            {
+                _windowService.StopAsync(CancellationToken.None);
+            }
+
+            if (Input.IsKeyPressed(Keyboard.Key.M))
+            {
+                _windowService.IsMouseVisible = !_windowService.IsMouseVisible;
+            }
+        }
+
+        private void HandleCollision(Vector2f newPosition)
+        {
+            if (_mapService.Get(new Vector2i((int)newPosition.X, (int)_player.Position.Y)) == 0)
+                _player.Position = new Vector2f(newPosition.X, _player.Position.Y);
+
+            if (_mapService.Get(new Vector2i((int)_player.Position.X, (int)newPosition.Y)) == 0)
+                _player.Position = new Vector2f(_player.Position.X, newPosition.Y);
+        }
     }
 }
