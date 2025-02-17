@@ -51,7 +51,7 @@ namespace WolfRender.Services
 
         public void Init()
         {
-            _textureService.LoadTexture("bluestone", "Assets/bluestone.png");
+            _textureService.LoadTexture("bluestone", "Assets/greystone.png");
             _bluestonePixels = _textureService.GetTextureArray("bluestone");
 
             _textureService.LoadTexture("greystone", "Assets/greystone.png");
@@ -227,7 +227,7 @@ namespace WolfRender.Services
             const float minShade = 0.1f;     // Darker minimum
 
             // Add exponential falloff for more dramatic distance shading
-            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), 8);
+            float shade = (float)Math.Pow(1.0f - (distance / maxDistance), _gameConfiguration.ShadingExponent);
             return Math.Max(minShade, shade);
         }
 

@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SFML.System;
 using SFML.Window;
 using System;
 using System.Threading;
 using WolfRender.Interfaces;
 using WolfRender.Models;
+using WolfRender.Models.Configuration;
 
 namespace WolfRender.Services
 {
@@ -15,9 +17,10 @@ namespace WolfRender.Services
         private readonly IPlayer _player;
         private readonly ILogger<PlayerService> _logger;
         private readonly IMapService _mapService;
+        private readonly GameConfiguration _gameConfiguration;
         private IWindowService _windowService;
         private IMapRendererService _mapRendererService;
-
+        
         // Movement properties
         private Vector2f velocity;
         private Vector2f acceleration;
@@ -25,26 +28,35 @@ namespace WolfRender.Services
         private readonly float accelerationRate = 25.0f;
         private readonly float friction = 8.0f;
         float _mouseSpeedMultiplier = 0.02f;
+        float _deltaTime;
 
         public PlayerService(
             ILogger<PlayerService> logger,
-            IMapService mapService)
+            IMapService mapService,
+            IOptions<GameConfiguration> gameConfiguration)
         {
             _logger = logger;
             _mapService = mapService;
+            _gameConfiguration = gameConfiguration.Value;
             _player = new Player();
             _logger.LogInformation("PlayerService starting");
         }
 
         public void Init(IWindowService windowService, IMapRendererService mapRendererService)
         {
+            _mapRendererService = mapRendererService;
             _windowService = windowService;
             _windowService.IsMouseVisible = false;
+            RegisterMouseWheelEvents();
+
             _logger.LogInformation("PlayerService initialized with window service");
         }
 
         public void Update(float deltaTime)
         {
+            // Store delta time
+            _deltaTime = deltaTime;
+
             // Get input
             GetKeypressInput();
 
@@ -106,6 +118,16 @@ namespace WolfRender.Services
             return input;
         }
 
+        private void RegisterMouseWheelEvents()
+        {
+            _windowService.Window.MouseWheelScrolled += (s, e) =>
+            {
+                _player.Fov += e.Delta * 0.1f;
+                _player.FovHalf = _player.Fov * 0.5f;
+            };
+            _logger.BeginScope("Mouse wheel events registered");
+        }
+
         private void HandleMouseRotation(float deltaTime)
         {
             if (_windowService.IsMouseVisible)
@@ -135,6 +157,17 @@ namespace WolfRender.Services
             if (Input.IsKeyPressed(Keyboard.Key.M))
             {
                 _windowService.IsMouseVisible = !_windowService.IsMouseVisible;
+            }
+
+            if (Input.IsKeyPressed(Keyboard.Key.PageUp))
+            {
+                _gameConfiguration.ShadingExponent += 5.0f * _deltaTime;
+                _mapRendererService.CalculateZBuffer();
+            }
+            if (Input.IsKeyPressed(Keyboard.Key.PageDown))
+            {
+                _gameConfiguration.ShadingExponent -= 5.0f * _deltaTime;
+                _mapRendererService.CalculateZBuffer();
             }
         }
 
