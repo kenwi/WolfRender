@@ -3,10 +3,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFML.Graphics;
 using SFML.System;
-using SFML.Window;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using WolfRender.Components;
 using WolfRender.Interfaces;
 using WolfRender.Models.Configuration;
 
@@ -14,11 +12,10 @@ namespace WolfRender.Services
 {
     internal class GameService : IGameService
     {
-        private ITextureService _textureService;
-        private GameConfiguration _config;
-        private ILogger<GameService> _logger;
-        private IMapRenderer _mapRenderer;
-        private IPlayerService _playerService;
+        private readonly GameConfiguration _config;
+        private readonly ILogger<GameService> _logger;
+        private readonly IMapRenderer _mapRendererService;
+        private readonly IPlayerService _playerService;
         private List<Drawable> _drawables;
         private Clock _time;
 
@@ -27,14 +24,12 @@ namespace WolfRender.Services
         public GameService(
             IOptions<GameConfiguration> config,
             ILogger<GameService> logger,
-            ITextureService textureService,
-            IMapRenderer mapRenderer,
+            IMapRenderer mapRendererService,
             IPlayerService playerService)
         {
-            _textureService = textureService;
             _config = config.Value;
             _logger = logger;
-            _mapRenderer = mapRenderer;
+            _mapRendererService = mapRendererService;
             _playerService = playerService;
             _logger.LogInformation("GameService starting");
         }
@@ -45,9 +40,10 @@ namespace WolfRender.Services
             _drawables = new List<Drawable>();
             _window = windowService.Window;
 
-            _mapRenderer.Init();
+            _mapRendererService.Init();
             _playerService.Init(windowService);
-            _drawables.Add(_mapRenderer as Drawable);
+            _drawables.Add(_mapRendererService as Drawable);
+            _drawables.Add(new FpsTrackerComponent(_config.Resolution.Y));
 
             _logger.LogInformation("GameService initialized with window service");
         }
@@ -68,7 +64,6 @@ namespace WolfRender.Services
 
         public void Render()
         {
-            //_window.Clear(Color.Black);
             foreach (var drawable in _drawables)
             {
                 _window.Draw(drawable);
@@ -77,10 +72,15 @@ namespace WolfRender.Services
 
         public void Update(float dt)
         {            
-            foreach(var drawable in _drawables)
+            // For each drawable, update if it implements IUpdateable
+            foreach (var drawable in _drawables)
             {
+                if (drawable is IUpdateable updateable)
+                {
+                    updateable.Update(dt);
+                }
+            }
                 _playerService.Update(dt);
             }
         }
     }
-}
