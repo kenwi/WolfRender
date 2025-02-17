@@ -15,9 +15,9 @@ namespace WolfRender.Services
         private readonly ILogger<GameService> _logger;
         private readonly IMapRendererService _mapRendererService;
         private readonly IPlayerService _playerService;
+        
         private List<Drawable> _drawables;
         private Clock _time;
-
         private RenderWindow _window;
         
         public GameService(
@@ -41,8 +41,10 @@ namespace WolfRender.Services
 
             _mapRendererService.Init();
             _playerService.Init(windowService, _mapRendererService);
+
             _drawables.Add(_mapRendererService as Drawable);
             _drawables.Add(new FpsTrackerComponent(_config.Resolution.Y));
+            _drawables.Add(new MinimapComponent(new Vector2i(64, 64), _config.Resolution.X, _mapRendererService.MapTexture, _playerService.Player));
 
             _logger.LogInformation("GameService initialized with window service");
         }

@@ -33,6 +33,7 @@ namespace WolfRender.Services
         private int _resolutionY;
         private int _resolutionX;
         List<int[]> _textures;
+        private Texture _minimapTexture;
 
         public TexturedMapRendererService(
             ILogger<TexturedMapRendererService> logger,
@@ -275,5 +276,7 @@ namespace WolfRender.Services
                 _zBuffer[y] = ceilingShade;
             }
         }
+
+        public Texture MapTexture => _minimapTexture;
     }
 }
