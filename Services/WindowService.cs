@@ -4,8 +4,6 @@ using Microsoft.Extensions.Options;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using WolfRender.Interfaces;
@@ -20,13 +18,8 @@ namespace WolfRender.Services
         private readonly GameConfiguration _gameConfig;
         private readonly ILogger<WindowService> _logger;
         private readonly IGameService _gameService;
-
-        private IHostApplicationLifetime _applicationLifetime;
+        
         private RenderWindow _window;
-        private WindowConfiguration _config;
-        private GameConfiguration _gameConfig;
-        private ILogger<WindowService> _logger;
-        private IGameService _gameService;
         private Vector2i _windowCenter;
         private bool _mouseVisible;
 
