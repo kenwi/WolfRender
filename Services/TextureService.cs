@@ -1,16 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using SFML.Graphics;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace WolfRender.Services
 {
     public class TextureService : ITextureService
     {
-        private ILogger<TextureService> _logger;
-        private Dictionary<string, Texture> _textures;
+        private readonly ILogger<TextureService> _logger;
+        private readonly Dictionary<string, Texture> _textures;
 
         public TextureService(ILogger<TextureService> logger)
         {
@@ -52,30 +49,6 @@ namespace WolfRender.Services
                 }
             }
             return pixels;
-        }
-
-        public int[,] GetMapData(string name)
-        {
-            var image = GetTextureImage(name);
-            var width = image.Size.X;
-            var height = image.Size.Y;
-            int[,] data = new int[width, height];
-
-            // Convert each pixel to map data
-            for (int y = 0; y < width; y++)
-            {
-                for (int x = 0; x < height; x++)
-                {
-                    var pixel = image.GetPixel((uint)x, (uint)y);
-
-                    // Convert pixel to grayscale and threshold
-                    float brightness = (pixel.R + pixel.G + pixel.B) / (3.0f * 255.0f);
-
-                    // If pixel is darker than 50% gray, it's a wall
-                    data[x, y] = brightness < 0.5f ? 1 : 0;
-                }
-            }
-            return data;
         }
     }
 }
