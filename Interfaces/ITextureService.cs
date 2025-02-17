@@ -8,8 +8,5 @@ namespace WolfRender.Services
         Texture GetTexture(string name);
         Image GetTextureImage(string name);
         int[] GetTextureArray(string name);
-        int[,] GetMapData(string name);
-
-
     }
 }

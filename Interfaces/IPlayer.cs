@@ -7,7 +7,7 @@ namespace WolfRender.Interfaces
         Vector2f Position { get; set; }
         float Fov { get; set; }
         double FovHalf { get; set; }
-        float Direction { get; set; }
+        double Direction { get; set; }
         float RotationSpeed { get; }
     }
 }
