@@ -125,6 +125,14 @@ namespace WolfRender.Services
                 _player.Fov += e.Delta * 0.1f;
                 _player.FovHalf = _player.Fov * 0.5f;
             };
+            _windowService.Window.MouseButtonPressed += (s, e) =>
+            {
+                if (e.Button == Mouse.Button.Middle)
+                {
+                    _player.Fov = (float)Math.PI / 2.0f;
+                    _player.FovHalf = _player.Fov * 0.5f;
+                }
+            };
             _logger.BeginScope("Mouse wheel events registered");
         }
 
@@ -161,12 +169,21 @@ namespace WolfRender.Services
 
             if (Input.IsKeyPressed(Keyboard.Key.PageUp))
             {
-                _gameConfiguration.ShadingExponent += 5.0f * _deltaTime;
+                _gameConfiguration.ShadingExponent += 10.0f * _deltaTime;
                 _mapRendererService.CalculateZBuffer();
             }
             if (Input.IsKeyPressed(Keyboard.Key.PageDown))
             {
-                _gameConfiguration.ShadingExponent -= 5.0f * _deltaTime;
+                if (_gameConfiguration.ShadingExponent <= 0.01)
+                {
+                    return;
+                }
+                _gameConfiguration.ShadingExponent -= 10.0f * _deltaTime;
+                _mapRendererService.CalculateZBuffer();
+            }
+            if (Input.IsKeyPressed(Keyboard.Key.Home))
+            {
+                _gameConfiguration.ShadingExponent = 5;
                 _mapRendererService.CalculateZBuffer();
             }
         }
