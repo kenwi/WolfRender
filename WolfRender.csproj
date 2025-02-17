@@ -16,37 +16,37 @@
     <None Update="map.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\barrel.png">
+    <None Update="Assets\barrel.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\bluestone.png">
+    <None Update="Assets\bluestone.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\colorstone.png">
+    <None Update="Assets\colorstone.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\eagle.png">
+    <None Update="Assets\eagle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\greenlight.png">
+    <None Update="Assets\greenlight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\greystone.png">
+    <None Update="Assets\greystone.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\mossy.png">
+    <None Update="Assets\mossy.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\pillar.png">
+    <None Update="Assets\pillar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\purplestone.png">
+    <None Update="Assets\purplestone.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\redbrick.png">
+    <None Update="Assets\redbrick.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Textures\wood.png">
+    <None Update="Assets\wood.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
