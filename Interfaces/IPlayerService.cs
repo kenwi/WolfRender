@@ -4,6 +4,6 @@
     {
         IPlayer Player { get; }
         void Update(float deltaTime);
-        void Init(IWindowService windowService);
+        void Init(IWindowService windowService, IMapRendererService mapRendererService);
     }
 }

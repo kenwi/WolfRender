@@ -16,6 +16,7 @@ namespace WolfRender.Services
         private readonly ILogger<PlayerService> _logger;
         private readonly IMapService _mapService;
         private IWindowService _windowService;
+        private IMapRendererService _mapRendererService;
 
         // Movement properties
         private Vector2f velocity;
@@ -35,7 +36,7 @@ namespace WolfRender.Services
             _logger.LogInformation("PlayerService starting");
         }
 
-        public void Init(IWindowService windowService)
+        public void Init(IWindowService windowService, IMapRendererService mapRendererService)
         {
             _windowService = windowService;
             _windowService.IsMouseVisible = false;

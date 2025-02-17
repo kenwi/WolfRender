@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFML.Graphics;
 using SFML.System;
@@ -13,7 +13,7 @@ namespace WolfRender.Services
     {
         private readonly GameConfiguration _config;
         private readonly ILogger<GameService> _logger;
-        private readonly IMapRenderer _mapRendererService;
+        private readonly IMapRendererService _mapRendererService;
         private readonly IPlayerService _playerService;
         private List<Drawable> _drawables;
         private Clock _time;
@@ -23,7 +23,7 @@ namespace WolfRender.Services
         public GameService(
             IOptions<GameConfiguration> config,
             ILogger<GameService> logger,
-            IMapRenderer mapRendererService,
+            IMapRendererService mapRendererService,
             IPlayerService playerService)
         {
             _config = config.Value;
@@ -40,7 +40,7 @@ namespace WolfRender.Services
             _window = windowService.Window;
 
             _mapRendererService.Init();
-            _playerService.Init(windowService);
+            _playerService.Init(windowService, _mapRendererService);
             _drawables.Add(_mapRendererService as Drawable);
             _drawables.Add(new FpsTrackerComponent(_config.Resolution.Y));
 
@@ -79,7 +79,7 @@ namespace WolfRender.Services
                     updateable.Update(dt);
                 }
             }
-                _playerService.Update(dt);
-            }
+            _playerService.Update(dt);
         }
     }
+}

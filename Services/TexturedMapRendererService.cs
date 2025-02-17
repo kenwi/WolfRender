@@ -9,7 +9,7 @@ using WolfRender.Models.Configuration;
 
 namespace WolfRender.Services
 {
-    internal class TexturedMapRendererService : Drawable, IMapRenderer
+    internal class TexturedMapRendererService : Drawable, IMapRendererService
     {
         private readonly ILogger<TexturedMapRendererService> _logger;
         private readonly ITextureService _textureService;
@@ -70,7 +70,6 @@ namespace WolfRender.Services
             _zBuffer = new float[_resolutionY];
             _player = _playerService.Player;
             _textureSize = (int)Math.Sqrt(_bluestonePixels.Length);
-
             _halfHeight = _resolutionY / 2;
 
             CalculateZBuffer();
