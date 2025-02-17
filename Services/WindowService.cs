@@ -15,18 +15,11 @@ namespace WolfRender.Services
 {
     internal class WindowService : IHostedService, IWindowService
     {
-        public RenderWindow Window => _window;
-        public Vector2i WindowCenter => _windowCenter;
-        public bool IsMouseVisible
-        {
-            get => _mouseVisible;
-            set
-            {
-                Window.SetMouseCursorVisible(value);
-                Window.SetMouseCursorGrabbed(!value);
-                _mouseVisible = value;
-            }
-        }
+        private readonly IHostApplicationLifetime _applicationLifetime;
+        private readonly WindowConfiguration _config;
+        private readonly GameConfiguration _gameConfig;
+        private readonly ILogger<WindowService> _logger;
+        private readonly IGameService _gameService;
 
         private IHostApplicationLifetime _applicationLifetime;
         private RenderWindow _window;
@@ -36,6 +29,9 @@ namespace WolfRender.Services
         private IGameService _gameService;
         private Vector2i _windowCenter;
         private bool _mouseVisible;
+
+        public RenderWindow Window => _window;
+        public Vector2i WindowCenter => _windowCenter;
 
         public WindowService(
             IHostApplicationLifetime applicationLifetime,
@@ -56,7 +52,9 @@ namespace WolfRender.Services
             var view = new View(new FloatRect(0, 0, _gameConfig.Resolution.X, _gameConfig.Resolution.Y));
             _window = new RenderWindow(new VideoMode(_config.Width, _config.Height), _config.Title);
             _window.SetView(view);
-            _windowCenter = _window.Position + new Vector2i((int)(_window.Size.X / 2), (int)(_window.Size.Y / 2));
+            _windowCenter = _window.Position + new Vector2i(_gameConfig.Resolution.X / 2, _gameConfig.Resolution.Y / 2);
+            _window.SetVerticalSyncEnabled(_config.IsVsyncEnabled);
+
             _logger.LogInformation("Created Window");
         }
 
@@ -87,6 +85,27 @@ namespace WolfRender.Services
             _applicationLifetime.StopApplication();
 
             return Task.CompletedTask;
+        }
+
+        public bool IsMouseVisible
+        {
+            get => _mouseVisible;
+            set
+            {
+                _window.SetMouseCursorVisible(value);
+                _window.SetMouseCursorGrabbed(!value);
+                _mouseVisible = value;
+            }
+        }
+
+        public bool IsVsyncEnabled
+        {
+            get => _config.IsVsyncEnabled;
+            set
+            {
+                _config.IsVsyncEnabled = value;
+                _window.SetVerticalSyncEnabled(value);
+            }
         }
     }
 }
