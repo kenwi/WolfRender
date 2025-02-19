@@ -129,7 +129,7 @@ namespace WolfRender.Services
             {
                 if (e.Button == Mouse.Button.Middle)
                 {
-                    _player.Fov = (float)Math.PI / 2.0f;
+                    _player.Fov = _gameConfiguration.DefaultFov;
                     _player.FovHalf = _player.Fov * 0.5f;
                 }
             };
@@ -190,11 +190,15 @@ namespace WolfRender.Services
 
         private void HandleCollision(Vector2f newPosition)
         {
-            if (_mapService.Get(new Vector2i((int)newPosition.X, (int)_player.Position.Y)) == 0)
-                _player.Position = new Vector2f(newPosition.X, _player.Position.Y);
+            int[] walkablePixelIds = [0, 3];
+            foreach(var id in walkablePixelIds)
+            {
+                if (_mapService.Get(new Vector2i((int)newPosition.X, (int)_player.Position.Y)) == id)
+                    _player.Position = new Vector2f(newPosition.X, _player.Position.Y);
 
-            if (_mapService.Get(new Vector2i((int)_player.Position.X, (int)newPosition.Y)) == 0)
-                _player.Position = new Vector2f(_player.Position.X, newPosition.Y);
+                if (_mapService.Get(new Vector2i((int)_player.Position.X, (int)newPosition.Y)) == id)
+                    _player.Position = new Vector2f(_player.Position.X, newPosition.Y);
+            }
         }
     }
 }
