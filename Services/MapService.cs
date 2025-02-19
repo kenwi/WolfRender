@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SFML.System;
 using System;
-using System.Drawing;
 using WolfRender.Interfaces;
 
 namespace WolfRender.Services
@@ -26,7 +25,7 @@ namespace WolfRender.Services
 
         private void Init()
         {
-            _data = GetMapData("map");
+            _data = GetMapData("map2");
             
             var textureSize = (int)Math.Sqrt(_data.Length);
             _size = new Vector2i(textureSize, textureSize);
@@ -60,7 +59,7 @@ namespace WolfRender.Services
                     // Convert pixel to grayscale and threshold
                     float brightness = (pixel.R + pixel.G + pixel.B) / (3.0f * 255.0f);
 
-                    // If pixel is darker than 50% gray, it's a wall
+                    //// If pixel is darker than 50% gray, it's a wall
                     data[x, y] = brightness < 0.5f ? 1 : 0;
 
                     // No wall
@@ -79,6 +78,24 @@ namespace WolfRender.Services
                     if(pixel.R == 255 && pixel.G == 0 && pixel.B == 0)
                     {
                         data[x, y] = 2;
+                    }
+
+                    //// wood floor
+                    if (pixel.R == 185 && pixel.G == 122 && pixel.B == 87)
+                    {
+                        data[x, y] = 3;
+                    }
+
+                    // wood wall
+                    if (pixel.R == 74 && pixel.G == 49 && pixel.B == 35)
+                    {
+                        data[x, y] = 4;
+                    }
+
+                    // bluestone
+                    if (pixel.R == 63 && pixel.G == 72 && pixel.B == 204)
+                    {
+                        data[x, y] = 5;
                     }
                 }
             }

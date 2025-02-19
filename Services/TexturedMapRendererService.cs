@@ -28,7 +28,6 @@ namespace WolfRender.Services
         private byte[] _bytes;
         private int[] _pixels;
         private float[] _zBuffer;
-        private int[] _greystonePixels;
         private int _halfHeight;
         private int _resolutionY;
         private int _resolutionX;
@@ -55,16 +54,22 @@ namespace WolfRender.Services
         public void Init()
         {
             _textures = new List<int[]>();
-            _textureService.LoadTexture("greystone", "Assets/greystone.png");
-            _textures.Add(_textureService.GetTextureArray("greystone"));
-            _greystonePixels = _textureService.GetTextureArray("greystone");
-
             _textureService.LoadTexture("bluestone", "Assets/bluestone.png");
-            _textures.Add(_textureService.GetTextureArray("bluestone"));
-            _bluestonePixels = _textureService.GetTextureArray("bluestone");
-
+            _textureService.LoadTexture("greystone", "Assets/greystone.png");
             _textureService.LoadTexture("redbrick", "Assets/redbrick.png");
+            _textureService.LoadTexture("wood", "Assets/wood.png");
+            _bluestonePixels = _textureService.GetTextureArray("greystone");
+
+            _textures.Add(_textureService.GetTextureArray("greystone"));
+            _textures.Add(_textureService.GetTextureArray("greystone"));
             _textures.Add(_textureService.GetTextureArray("redbrick"));
+            _textures.Add(_textureService.GetTextureArray("wood")); // Wood floor
+            _textures.Add(_textureService.GetTextureArray("wood")); // Wood wall
+            _textures.Add(_textureService.GetTextureArray("bluestone")); // Bluestone wall
+
+
+            var minimapImage = _textureService.GetTextureImage("map2");
+            _minimapTexture = new Texture(minimapImage);
 
             _textureService.LoadTexture("mossy", "Assets/mossy.png");
             _mossyPixels = _textureService.GetTextureArray("mossy");
@@ -138,6 +143,9 @@ namespace WolfRender.Services
                     textureIdx = _mapService.Get(new Vector2i(mapX, mapY));
                     if (textureIdx > 0)
                         hit = true;
+
+                    if (textureIdx == 3)
+                        hit = false;
                 }
 
                 // Calculate perpendicular distance
@@ -195,11 +203,10 @@ namespace WolfRender.Services
 
                     // Ceiling
                     int ceilingY = _resolutionY - y - 1;
-                    var (ceilingTexX, ceilingTexY) = GetFloorTexCoord64x64(x, ceilingY, angle);
+                    var (ceilingTexX, ceilingTexY, ceilingTextureIdx) = GetFloorTexCoord64x64(x, ceilingY, angle);
 
                     // Get the color from the GreyStone texture
                     int ceilingColorIdx = ceilingTexX + ceilingTexY * _textureSize;
-
                     int ceilingColor = _mossyPixels[ceilingColorIdx];
 
                     // Apply ceiling shading
@@ -210,11 +217,17 @@ namespace WolfRender.Services
 
                     // Floor
                     int floorY = _resolutionY - y - 1;
-                    var (floorTexX, floorTexY) = GetFloorTexCoord64x64(x, floorY, angle);
+                    var (floorTexX, floorTexY, floorTextureIdx) = GetFloorTexCoord64x64(x, floorY, angle);
 
                     // Get the color from the GreyStone texture
                     int floorColorIdx = floorTexX + floorTexY * _textureSize;
-                    int floorColor = _greystonePixels[floorColorIdx];
+                    int[] currentTexture = _textures[floorTextureIdx];
+                    int floorColor = currentTexture[floorColorIdx];
+
+                    if(floorTextureIdx == 3)
+                    {
+                        ;
+                    }
 
                     // Apply floor shading
                     r = (byte)((floorColor & 0xFF) * floorShade);
@@ -244,7 +257,7 @@ namespace WolfRender.Services
             return Math.Max(minShade, shade);
         }
 
-        (int, int) GetFloorTexCoord64x64(int x, int y, double angle)
+        (int, int, int) GetFloorTexCoord64x64(int x, int y, double angle)
         {
             // Use the absolute angle directly - no need to adjust for player direction since it's already included
             double rayDirX = Math.Cos(angle);
@@ -257,6 +270,12 @@ namespace WolfRender.Services
             double floorX = _player.Position.X + currentDist * rayDirX;
             double floorY = _player.Position.Y + currentDist * rayDirY;
 
+            int textureId = _mapService.Get(new Vector2i((int)floorX, (int)floorY));
+            if (textureId == 3)
+            {
+                ;
+            }
+
             // Get the texture coordinates
             int texX = (int)(floorX * _textureSize) % _textureSize;
             int texY = (int)(floorY * _textureSize) % _textureSize;
@@ -264,7 +283,7 @@ namespace WolfRender.Services
             if (texX < 0) texX += _textureSize;
             if (texY < 0) texY += _textureSize;
 
-            return (texX, texY);
+            return (texX, texY, textureId);
         }
 
         public void CalculateZBuffer()
