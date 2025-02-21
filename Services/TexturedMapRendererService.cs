@@ -68,7 +68,7 @@ namespace WolfRender.Services
             _textures.Add(_textureService.GetTextureArray("bluestone")); // Bluestone wall
 
 
-            var minimapImage = _textureService.GetTextureImage("map2");
+            var minimapImage = _textureService.GetTextureImage("level1");
             _minimapTexture = new Texture(minimapImage);
 
             _textureService.LoadTexture("mossy", "Assets/mossy.png");
