@@ -31,8 +31,11 @@ namespace WolfRender.Services
         private int _halfHeight;
         private int _resolutionY;
         private int _resolutionX;
-        List<int[]> _textures;
+        private List<int[]> _textures;
         private Texture _minimapTexture;
+        private Texture _barrelTexture;
+        private Sprite _barrelSprite;
+        private List<Vector2f> _spritePositions;
 
         public TexturedMapRendererService(
             ILogger<TexturedMapRendererService> logger,
@@ -74,6 +77,15 @@ namespace WolfRender.Services
             _textureService.LoadTexture("mossy", "Assets/mossy.png");
             _mossyPixels = _textureService.GetTextureArray("mossy");
 
+            // Create a new sprite with transparency
+            _textureService.LoadTexture("barrel", "Assets/barrel.png");
+            var barrelImage = _textureService.GetTextureImage("barrel");
+            barrelImage.CreateMaskFromColor(Color.Black);
+            _barrelTexture = new Texture(barrelImage);
+            _barrelSprite = new Sprite(_barrelTexture);
+            _barrelSprite.Position = new Vector2f(20.0f, 45.5f);
+            _barrelSprite.Origin = new Vector2f(_barrelTexture.Size.X / 2, _barrelTexture.Size.Y / 2);
+            
             _resolutionX = _gameConfiguration.Resolution.X;
             _resolutionY = _gameConfiguration.Resolution.Y;
 
@@ -85,6 +97,12 @@ namespace WolfRender.Services
             _player = _playerService.Player;
             _textureSize = (int)Math.Sqrt(_bluestonePixels.Length);
             _halfHeight = _resolutionY / 2;
+
+            _spritePositions = new List<Vector2f>
+            {
+                new Vector2f(20.5f, 46.5f),
+                new Vector2f(20.5f, 44.5f),
+            };
 
             CalculateZBuffer();
 
@@ -224,11 +242,6 @@ namespace WolfRender.Services
                     int[] currentTexture = _textures[floorTextureIdx];
                     int floorColor = currentTexture[floorColorIdx];
 
-                    if(floorTextureIdx == 3)
-                    {
-                        ;
-                    }
-
                     // Apply floor shading
                     r = (byte)((floorColor & 0xFF) * floorShade);
                     g = (byte)((floorColor >> 8 & 0xFF) * floorShade);
@@ -245,6 +258,45 @@ namespace WolfRender.Services
             Buffer.BlockCopy(_pixels, 0, _bytes, 0, _bytes.Length);
             _texture.Update(_bytes);
             target.Draw(_sprite, states);
+            RenderSprites(target, states);
+        }
+
+
+        private void RenderSprites(RenderTarget target, RenderStates states)
+        {
+            foreach (var spritePosition in _spritePositions)
+            {
+                // 1. Calculate vector from player to sprite
+                double spriteX = spritePosition.X - _player.Position.X;
+                double spriteY = spritePosition.Y - _player.Position.Y;
+
+                // 2. Calculate angle between player's direction and sprite
+                double playerToSpriteAngle = Math.Atan2(spriteY, spriteX);
+                double relativeAngle = playerToSpriteAngle - _player.Direction;
+
+                // Normalize angle to [-PI, PI]
+                while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
+                while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
+
+                // 3. Check if sprite is in field of view
+                //if (Math.Abs(relativeAngle) > _player.FovHalf + 0.1)
+                //    return;
+
+                // 4. Calculate distance to sprite (for scaling)
+                double distance = Math.Sqrt(spriteX * spriteX + spriteY * spriteY);
+
+                // 5. Calculate screen X position based on relative angle
+                float screenX = _resolutionX / 2 + (float)(relativeAngle / _player.FovHalf * _resolutionX / 2);
+
+                // 6. Calculate sprite scale based on distance
+                float scale = _resolutionY / (float)(distance * 2) / _barrelTexture.Size.Y;
+
+                // 7. Render sprites
+                _barrelSprite.Scale = new Vector2f(scale * 2, scale * 2);
+                _barrelSprite.Position = new Vector2f(screenX, _resolutionY / 2);
+                target.Draw(_barrelSprite, states);
+            }
+
         }
 
         private float CalculateShade(double distance)
@@ -271,10 +323,6 @@ namespace WolfRender.Services
             double floorY = _player.Position.Y + currentDist * rayDirY;
 
             int textureId = _mapService.Get(new Vector2i((int)floorX, (int)floorY));
-            if (textureId == 3)
-            {
-                ;
-            }
 
             // Get the texture coordinates
             int texX = (int)(floorX * _textureSize) % _textureSize;
