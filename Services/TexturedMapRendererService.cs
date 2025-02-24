@@ -278,10 +278,6 @@ namespace WolfRender.Services
                 while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
                 while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
 
-                // 3. Check if sprite is in field of view
-                //if (Math.Abs(relativeAngle) > _player.FovHalf + 0.1)
-                //    return;
-
                 // 4. Calculate distance to sprite (for scaling)
                 double distance = Math.Sqrt(spriteX * spriteX + spriteY * spriteY);
 
@@ -291,12 +287,18 @@ namespace WolfRender.Services
                 // 6. Calculate sprite scale based on distance
                 float scale = _resolutionY / (float)(distance * 2) / _barrelTexture.Size.Y;
 
+                // Calculate sprite width in screen space
+                float spriteScreenWidth = _barrelTexture.Size.X * scale * 2;  // Account for scale * 2
+                
+                // Check if any part of the sprite is visible on screen
+                if (screenX + spriteScreenWidth / 2 < 0 || screenX - spriteScreenWidth / 2 > _resolutionX)
+                    continue;
+
                 // 7. Render sprites
                 _barrelSprite.Scale = new Vector2f(scale * 2, scale * 2);
                 _barrelSprite.Position = new Vector2f(screenX, _resolutionY / 2);
                 target.Draw(_barrelSprite, states);
             }
-
         }
 
         private float CalculateShade(double distance)
