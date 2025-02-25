@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFML.Graphics;
 using SFML.System;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WolfRender.Interfaces;
 using WolfRender.Models.Configuration;
@@ -36,6 +37,12 @@ namespace WolfRender.Services
         private Texture _barrelTexture;
         private Sprite _barrelSprite;
         private List<Vector2f> _spritePositions;
+        private double[] _wallDistances;
+        private Texture _debugTexture;
+        private Sprite _debugSprite;
+        private byte[] _debugBytes;
+        
+        public Texture MapTexture => _minimapTexture;
 
         public TexturedMapRendererService(
             ILogger<TexturedMapRendererService> logger,
@@ -93,7 +100,7 @@ namespace WolfRender.Services
             _sprite = new Sprite(_texture);
             _bytes = new byte[_resolutionX * _resolutionY * 4];
             _pixels = new int[_resolutionX * _resolutionY];
-            _zBuffer = new float[_resolutionY];
+            _zBuffer = new float[_resolutionY];  
             _player = _playerService.Player;
             _textureSize = (int)Math.Sqrt(_bluestonePixels.Length);
             _halfHeight = _resolutionY / 2;
@@ -104,7 +111,15 @@ namespace WolfRender.Services
                 new Vector2f(20.5f, 44.5f),
             };
 
+            _wallDistances = new double[_resolutionX];
+
             CalculateZBuffer();
+
+            // Initialize debug visualization
+            _debugTexture = new Texture((uint)_resolutionX, (uint)_resolutionY);
+            _debugSprite = new Sprite(_debugTexture);
+            _debugBytes = new byte[_resolutionX * _resolutionY * 4];
+            
 
             _logger.LogInformation("TexturedMapRendererService initialized");
         }
@@ -124,8 +139,8 @@ namespace WolfRender.Services
                 int mapY = (int)_player.Position.Y;
 
                 // Length of ray from one x or y-side to next x or y-side
-                double deltaDistX = Math.Abs(1 / rayDirX) * 100;
-                double deltaDistY = Math.Abs(1 / rayDirY) * 100;
+                double deltaDistX = Math.Abs(1 / rayDirX) * 1;
+                double deltaDistY = Math.Abs(1 / rayDirY) * 1;
 
                 // Calculate step and initial sideDist
                 int stepX = rayDirX < 0 ? -1 : 1;
@@ -170,6 +185,9 @@ namespace WolfRender.Services
                 double perpWallDist = side == 0
                     ? (mapX - _player.Position.X + (1 - stepX) / 2) / rayDirX
                     : (mapY - _player.Position.Y + (1 - stepY) / 2) / rayDirY;
+
+                // Store the actual wall distance
+                _wallDistances[x] = perpWallDist;
 
                 // Calculate wall height and drawing bounds
                 int lineHeight = (int)(_resolutionY / perpWallDist);
@@ -249,7 +267,6 @@ namespace WolfRender.Services
                     _pixels[xOffset + floorY * _resolutionX] = Tools.PackColor(r, g, b);
                 }
             });
-
             UpdateScreenTexture(target, states);
         }
 
@@ -259,18 +276,18 @@ namespace WolfRender.Services
             _texture.Update(_bytes);
             target.Draw(_sprite, states);
             RenderSprites(target, states);
+            //UpdateDebugVisualization(target);
         }
-
 
         private void RenderSprites(RenderTarget target, RenderStates states)
         {
             foreach (var spritePosition in _spritePositions)
             {
-                // 1. Calculate vector from player to sprite
+                // Calculate vector from player to sprite
                 double spriteX = spritePosition.X - _player.Position.X;
                 double spriteY = spritePosition.Y - _player.Position.Y;
 
-                // 2. Calculate angle between player's direction and sprite
+                // Calculate angle between player's direction and sprite
                 double playerToSpriteAngle = Math.Atan2(spriteY, spriteX);
                 double relativeAngle = playerToSpriteAngle - _player.Direction;
 
@@ -278,26 +295,132 @@ namespace WolfRender.Services
                 while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
                 while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
 
-                // 4. Calculate distance to sprite (for scaling)
+                // Calculate distance to sprite (for scaling)
                 double distance = Math.Sqrt(spriteX * spriteX + spriteY * spriteY);
 
-                // 5. Calculate screen X position based on relative angle
+                // Calculate screen X position based on relative angle
                 float screenX = _resolutionX / 2 + (float)(relativeAngle / _player.FovHalf * _resolutionX / 2);
 
-                // 6. Calculate sprite scale based on distance
+                // Calculate sprite scale based on distance
                 float scale = _resolutionY / (float)(distance * 2) / _barrelTexture.Size.Y;
 
                 // Calculate sprite width in screen space
-                float spriteScreenWidth = _barrelTexture.Size.X * scale * 2;  // Account for scale * 2
+                float spriteScreenWidth = _barrelTexture.Size.X * scale;
                 
-                // Check if any part of the sprite is visible on screen
-                if (screenX + spriteScreenWidth / 2 < 0 || screenX - spriteScreenWidth / 2 > _resolutionX)
-                    continue;
+                // Calculate sprite screen bounds
+                int spriteLeft = (int)(screenX - spriteScreenWidth / 2);
+                int spriteRight = (int)(screenX + spriteScreenWidth / 2);
+                
+                // Clamp to screen bounds
+                spriteLeft = Math.Max(0, Math.Min(spriteLeft, _resolutionX - 1));
+                spriteRight = Math.Max(0, Math.Min(spriteRight, _resolutionX - 1));
 
-                // 7. Render sprites
-                _barrelSprite.Scale = new Vector2f(scale * 2, scale * 2);
-                _barrelSprite.Position = new Vector2f(screenX, _resolutionY / 2);
-                target.Draw(_barrelSprite, states);
+                // Check if sprite is occluded by walls
+                bool isFullyVisible = true;
+                bool isPartiallyVisible = false;
+                
+                // Create arrays to track which columns are visible
+                bool[] columnVisibility = new bool[spriteRight - spriteLeft + 1];
+                
+                for (int x = spriteLeft; x <= spriteRight; x++)
+                {
+                    int columnIndex = x - spriteLeft;
+                    double wallDist = _wallDistances[x];
+                    
+                    // Check visibility for this column
+                    if (distance < wallDist)
+                    {
+                        isPartiallyVisible = true;
+                        columnVisibility[columnIndex] = true;
+                    }
+                    else
+                    {
+                        isFullyVisible = false;
+                        columnVisibility[columnIndex] = false;
+                    }
+                }
+                
+                // Determine final visibility state
+                if (isFullyVisible)
+                {
+                    // Render normally
+                    _barrelSprite.Scale = new Vector2f(scale * 2, scale * 2);
+                    _barrelSprite.Position = new Vector2f(screenX, _resolutionY / 2);
+                    target.Draw(_barrelSprite, states);
+                }
+                else if (isPartiallyVisible)
+                {
+                    // Create a clipped version of the sprite
+                    RenderPartiallyOccludedSprite(target, spriteLeft, spriteRight, screenX, scale, distance, columnVisibility);
+                }
+                // If not visible at all, don't render
+            }
+        }
+
+        private void RenderPartiallyOccludedSprite(RenderTarget target, int spriteLeft, int spriteRight, 
+            float screenX, float scale, double distance, bool[] columnVisibility)
+        {
+            // Create a render texture the size of the sprite on screen
+            int spriteWidth = spriteRight - spriteLeft + 1;
+            RenderTexture renderTexture = new RenderTexture((uint)spriteWidth, (uint)_resolutionY);
+            renderTexture.Clear(Color.Transparent);
+            
+            // Draw the original sprite to the render texture
+            Sprite tempSprite = new Sprite(_barrelTexture);
+            tempSprite.Scale = new Vector2f(scale * 2, scale * 2);
+            tempSprite.Position = new Vector2f(spriteWidth / 2, _resolutionY / 2);
+            tempSprite.Origin = new Vector2f(_barrelTexture.Size.X / 2, _barrelTexture.Size.Y / 2);
+            renderTexture.Draw(tempSprite);
+            renderTexture.Display();
+            
+            // Create a mask to hide occluded parts
+            for (int x = 0; x < spriteWidth; x++)
+            {
+                if (!columnVisibility[x])
+                {
+                    // Draw a vertical transparent strip to mask this column
+                    RectangleShape mask = new RectangleShape(new Vector2f(1, _resolutionY));
+                    mask.Position = new Vector2f(x, 0);
+                    mask.FillColor = Color.Transparent;
+                    renderTexture.Draw(mask, new RenderStates(BlendMode.None));
+                }
+            }
+            renderTexture.Display();
+            
+            // Draw the clipped sprite to the main target
+            Sprite clippedSprite = new Sprite(renderTexture.Texture);
+            clippedSprite.Position = new Vector2f(spriteLeft, 0);
+            target.Draw(clippedSprite);
+            
+            // Clean up
+            renderTexture.Dispose();
+        }
+
+        public void DebugSpritesDistance()
+        {
+            foreach (var spritePosition in _spritePositions)
+            {
+                // Calculate vector from player to sprite
+                double spriteX = spritePosition.X - _player.Position.X;
+                double spriteY = spritePosition.Y - _player.Position.Y;
+                
+                // Calculate distance
+                double distance = Math.Sqrt(spriteX * spriteX + spriteY * spriteY);
+                
+                // Calculate angle between player's direction and sprite
+                double playerToSpriteAngle = Math.Atan2(spriteY, spriteX);
+                double relativeAngle = playerToSpriteAngle - _player.Direction;
+                
+                // Normalize angle to [-PI, PI]
+                while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
+                while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
+
+                // Convert angle to degrees for readability
+                double angleInDegrees = relativeAngle * 180 / Math.PI;
+
+                _logger.LogInformation(
+                    "Sprite at ({X:F1}, {Y:F1}): Distance = {Distance:F2}, Angle = {Angle:F1}°",
+                    spritePosition.X, spritePosition.Y, distance, angleInDegrees);
             }
         }
 
@@ -305,7 +428,7 @@ namespace WolfRender.Services
         {
             const float maxDistance = 64.0f;  // Increased for better floor visibility
             const float minShade = 0.1f;     // Darker minimum
-
+            
             // Add exponential falloff for more dramatic distance shading
             float shade = (float)Math.Pow(1.0f - (distance / maxDistance), _gameConfiguration.ShadingExponent);
             return Math.Max(minShade, shade);
@@ -346,6 +469,32 @@ namespace WolfRender.Services
             }
         }
 
-        public Texture MapTexture => _minimapTexture;
+        private void UpdateDebugVisualization(RenderTarget target)
+        {
+            // Clear the debug bytes
+            Array.Clear(_debugBytes, 0, _debugBytes.Length);
+
+            // For each column
+            for (int x = 0; x < _resolutionX; x++)
+            {
+                // Convert wall distance to a color intensity
+                double distance = _wallDistances[x];
+                byte intensity = (byte)(Math.Min(255, (distance * 10))); // Adjust multiplier to taste
+                
+                // Draw a vertical line in this column
+                for (int y = 0; y < _resolutionY; y++)
+                {
+                    int pixelIndex = (y * _resolutionX + x) * 4;
+                    _debugBytes[pixelIndex] = intensity;     // R
+                    _debugBytes[pixelIndex + 1] = 0;        // G
+                    _debugBytes[pixelIndex + 2] = 0;        // B
+                    _debugBytes[pixelIndex + 3] = 200;      // A (semi-transparent)
+                }
+            }
+
+            // Update and draw the debug visualization
+            _debugTexture.Update(_debugBytes);
+            target.Draw(_debugSprite);
+        }
     }
 }
