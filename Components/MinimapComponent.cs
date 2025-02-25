@@ -14,6 +14,7 @@ namespace WolfRender.Components
         private Sprite _minimapSprite;
         private CircleShape _playerDot;
         private ConvexShape _playerFov;
+        private float previousFov;
 
         private const float MINIMAP_SCALE = 4.0f;
 
@@ -68,6 +69,12 @@ namespace WolfRender.Components
             _playerDot.Position = new Vector2f(
                 _minimapSprite.Position.X + (_player.Position.X * MINIMAP_SCALE) - _playerDot.Radius,
                 _minimapSprite.Position.Y + (_player.Position.Y * MINIMAP_SCALE) - _playerDot.Radius);
+            
+            if (_player.Fov != previousFov)
+            {
+                UpdateFovCone();
+                previousFov = _player.Fov;
+            }
         }
     }
 }
