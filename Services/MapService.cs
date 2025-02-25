@@ -25,7 +25,7 @@ namespace WolfRender.Services
 
         private void Init()
         {
-            _data = GetMapData("map2");
+            _data = GetMapData("level1");
             
             var textureSize = (int)Math.Sqrt(_data.Length);
             _size = new Vector2i(textureSize, textureSize);
