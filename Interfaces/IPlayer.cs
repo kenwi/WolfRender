@@ -2,7 +2,7 @@
 
 namespace WolfRender.Interfaces
 {
-    internal interface IPlayer
+    public interface IPlayer
     {
         Vector2f Position { get; set; }
         float Fov { get; set; }

@@ -20,7 +20,9 @@ namespace WolfRender
                     services.AddSingleton<ITextureService, TextureService>();
                     services.AddSingleton<IGameService, GameService>();
                     services.AddSingleton<IMapRendererService, TexturedMapRendererService>();
+                    services.AddSingleton<ISpriteRendererService, SpriteRenderService>();
                     services.AddSingleton<IMapService, MapService>();
+                    services.AddSingleton<IAnimationService, AnimationService>();
 
                     services.AddHostedService<WindowService>();
                 })

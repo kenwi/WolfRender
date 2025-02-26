@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,13 +35,12 @@ namespace WolfRender.Services
         private int _resolutionX;
         private List<int[]> _textures;
         private Texture _minimapTexture;
-        private Texture _barrelTexture;
-        private Sprite _barrelSprite;
         private List<Vector2f> _spritePositions;
         private double[] _wallDistances;
         private Texture _debugTexture;
         private Sprite _debugSprite;
         private byte[] _debugBytes;
+        private Vector2f _guardPosition = new Vector2f(20.5f, 45.5f);
         
         public Texture MapTexture => _minimapTexture;
 
@@ -84,15 +84,6 @@ namespace WolfRender.Services
             _textureService.LoadTexture("mossy", "Assets/mossy.png");
             _mossyPixels = _textureService.GetTextureArray("mossy");
 
-            // Create a new sprite with transparency
-            _textureService.LoadTexture("barrel", "Assets/barrel.png");
-            var barrelImage = _textureService.GetTextureImage("barrel");
-            barrelImage.CreateMaskFromColor(Color.Black);
-            _barrelTexture = new Texture(barrelImage);
-            _barrelSprite = new Sprite(_barrelTexture);
-            _barrelSprite.Position = new Vector2f(20.0f, 45.5f);
-            _barrelSprite.Origin = new Vector2f(_barrelTexture.Size.X / 2, _barrelTexture.Size.Y / 2);
-            
             _resolutionX = _gameConfiguration.Resolution.X;
             _resolutionY = _gameConfiguration.Resolution.Y;
 
@@ -109,6 +100,7 @@ namespace WolfRender.Services
             {
                 new Vector2f(20.5f, 46.5f),
                 new Vector2f(20.5f, 44.5f),
+                _guardPosition  // Add guard position
             };
 
             _wallDistances = new double[_resolutionX];
@@ -119,13 +111,13 @@ namespace WolfRender.Services
             _debugTexture = new Texture((uint)_resolutionX, (uint)_resolutionY);
             _debugSprite = new Sprite(_debugTexture);
             _debugBytes = new byte[_resolutionX * _resolutionY * 4];
-            
 
             _logger.LogInformation("TexturedMapRendererService initialized");
         }
 
         public void Draw(RenderTarget target, RenderStates states)
         {
+
             Parallel.For(0, (int)_gameConfiguration.Resolution.X, x =>
             {
                 double angle = _player.Direction - _player.FovHalf + (x * _player.Fov) / _gameConfiguration.Resolution.X;
@@ -268,6 +260,7 @@ namespace WolfRender.Services
                 }
             });
             UpdateScreenTexture(target, states);
+            _mapService.WallDistances = _wallDistances;
         }
 
         private void UpdateScreenTexture(RenderTarget target, RenderStates states)
@@ -275,125 +268,7 @@ namespace WolfRender.Services
             Buffer.BlockCopy(_pixels, 0, _bytes, 0, _bytes.Length);
             _texture.Update(_bytes);
             target.Draw(_sprite, states);
-            RenderSprites(target, states);
             //UpdateDebugVisualization(target);
-        }
-
-        private void RenderSprites(RenderTarget target, RenderStates states)
-        {
-            foreach (var spritePosition in _spritePositions)
-            {
-                // Calculate vector from player to sprite
-                double spriteX = spritePosition.X - _player.Position.X;
-                double spriteY = spritePosition.Y - _player.Position.Y;
-
-                // Calculate angle between player's direction and sprite
-                double playerToSpriteAngle = Math.Atan2(spriteY, spriteX);
-                double relativeAngle = playerToSpriteAngle - _player.Direction;
-
-                // Normalize angle to [-PI, PI]
-                while (relativeAngle > Math.PI) relativeAngle -= 2 * Math.PI;
-                while (relativeAngle < -Math.PI) relativeAngle += 2 * Math.PI;
-
-                // Calculate distance to sprite (for scaling)
-                double distance = Math.Sqrt(spriteX * spriteX + spriteY * spriteY);
-
-                // Calculate screen X position based on relative angle
-                float screenX = _resolutionX / 2 + (float)(relativeAngle / _player.FovHalf * _resolutionX / 2);
-
-                // Calculate sprite scale based on distance
-                float scale = _resolutionY / (float)(distance * 2) / _barrelTexture.Size.Y;
-
-                // Calculate sprite width in screen space
-                float spriteScreenWidth = _barrelTexture.Size.X * scale;
-                
-                // Calculate sprite screen bounds
-                int spriteLeft = (int)(screenX - spriteScreenWidth / 2);
-                int spriteRight = (int)(screenX + spriteScreenWidth / 2);
-                
-                // Clamp to screen bounds
-                spriteLeft = Math.Max(0, Math.Min(spriteLeft, _resolutionX - 1));
-                spriteRight = Math.Max(0, Math.Min(spriteRight, _resolutionX - 1));
-
-                // Check if sprite is occluded by walls
-                bool isFullyVisible = true;
-                bool isPartiallyVisible = false;
-                
-                // Create arrays to track which columns are visible
-                bool[] columnVisibility = new bool[spriteRight - spriteLeft + 1];
-                
-                for (int x = spriteLeft; x <= spriteRight; x++)
-                {
-                    int columnIndex = x - spriteLeft;
-                    double wallDist = _wallDistances[x];
-                    
-                    // Check visibility for this column
-                    if (distance < wallDist)
-                    {
-                        isPartiallyVisible = true;
-                        columnVisibility[columnIndex] = true;
-                    }
-                    else
-                    {
-                        isFullyVisible = false;
-                        columnVisibility[columnIndex] = false;
-                    }
-                }
-                
-                // Determine final visibility state
-                if (isFullyVisible)
-                {
-                    // Render normally
-                    _barrelSprite.Scale = new Vector2f(scale * 2, scale * 2);
-                    _barrelSprite.Position = new Vector2f(screenX, _resolutionY / 2);
-                    target.Draw(_barrelSprite, states);
-                }
-                else if (isPartiallyVisible)
-                {
-                    // Create a clipped version of the sprite
-                    RenderPartiallyOccludedSprite(target, spriteLeft, spriteRight, screenX, scale, distance, columnVisibility);
-                }
-                // If not visible at all, don't render
-            }
-        }
-
-        private void RenderPartiallyOccludedSprite(RenderTarget target, int spriteLeft, int spriteRight, 
-            float screenX, float scale, double distance, bool[] columnVisibility)
-        {
-            // Create a render texture the size of the sprite on screen
-            int spriteWidth = spriteRight - spriteLeft + 1;
-            RenderTexture renderTexture = new RenderTexture((uint)spriteWidth, (uint)_resolutionY);
-            renderTexture.Clear(Color.Transparent);
-            
-            // Draw the original sprite to the render texture
-            Sprite tempSprite = new Sprite(_barrelTexture);
-            tempSprite.Scale = new Vector2f(scale * 2, scale * 2);
-            tempSprite.Position = new Vector2f(spriteWidth / 2, _resolutionY / 2);
-            tempSprite.Origin = new Vector2f(_barrelTexture.Size.X / 2, _barrelTexture.Size.Y / 2);
-            renderTexture.Draw(tempSprite);
-            renderTexture.Display();
-            
-            // Create a mask to hide occluded parts
-            for (int x = 0; x < spriteWidth; x++)
-            {
-                if (!columnVisibility[x])
-                {
-                    // Draw a vertical transparent strip to mask this column
-                    RectangleShape mask = new RectangleShape(new Vector2f(1, _resolutionY));
-                    mask.Position = new Vector2f(x, 0);
-                    mask.FillColor = Color.Transparent;
-                    renderTexture.Draw(mask, new RenderStates(BlendMode.None));
-                }
-            }
-            renderTexture.Display();
-            
-            // Draw the clipped sprite to the main target
-            Sprite clippedSprite = new Sprite(renderTexture.Texture);
-            clippedSprite.Position = new Vector2f(spriteLeft, 0);
-            target.Draw(clippedSprite);
-            
-            // Clean up
-            renderTexture.Dispose();
         }
 
         public void DebugSpritesDistance()

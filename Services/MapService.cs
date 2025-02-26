@@ -11,6 +11,7 @@ namespace WolfRender.Services
         private readonly ITextureService _textureService;
         private int[,] _data { get; set; }
         private Vector2i _size;
+        public double[] WallDistances { get; set; }
 
         public MapService(
             ILogger<MapService> logger,
