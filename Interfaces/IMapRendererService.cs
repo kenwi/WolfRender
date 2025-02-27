@@ -2,10 +2,11 @@
 
 namespace WolfRender.Interfaces
 {
-    internal interface IMapRendererService
+    public interface IMapRendererService
     {
         Texture MapTexture { get; }
         void Init();
         void CalculateZBuffer();
+        void DebugSpritesDistance();
     }
 }

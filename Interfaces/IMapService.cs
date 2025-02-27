@@ -2,7 +2,7 @@
 
 namespace WolfRender.Interfaces
 {
-    internal interface IMapService
+    public interface IMapService
     {
         double[] WallDistances { get; set; }
         int Get(Vector2i position);

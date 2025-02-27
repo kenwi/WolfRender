@@ -1,6 +1,6 @@
 ﻿namespace WolfRender.Interfaces
 {
-    internal interface IPlayerService
+    public interface IPlayerService
     {
         IPlayer Player { get; }
         void Update(float deltaTime);

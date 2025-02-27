@@ -1,6 +1,8 @@
-﻿namespace WolfRender.Interfaces
+﻿using SFML.Graphics;
+
+namespace WolfRender.Interfaces
 {
-    internal interface ISpriteRendererService
+    public interface ISpriteRendererService
     {
         void Init();
     }
