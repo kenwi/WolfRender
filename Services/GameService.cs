@@ -16,6 +16,7 @@ namespace WolfRender.Services
         private readonly IMapRendererService _mapRendererService;
         private readonly IPlayerService _playerService;
         private readonly ISpriteRendererService _spriteRendererService;
+        private readonly IEntityService _entityService;
         private List<Drawable> _drawables;
         private Clock _time;
         private RenderWindow _window;
@@ -25,13 +26,15 @@ namespace WolfRender.Services
             ILogger<GameService> logger,
             IMapRendererService mapRendererService,
             IPlayerService playerService,
-            ISpriteRendererService spriteRendererService)
+            ISpriteRendererService spriteRendererService,
+            IEntityService entityService)
         {
             _config = config.Value;
             _logger = logger;
             _mapRendererService = mapRendererService;
             _playerService = playerService;
             _spriteRendererService = spriteRendererService;
+            _entityService = entityService;
             _logger.LogInformation("GameService starting");
         }
 
@@ -44,6 +47,7 @@ namespace WolfRender.Services
             _mapRendererService.Init();
             _playerService.Init(windowService, _mapRendererService);
             _spriteRendererService.Init();
+            _entityService.Init();
 
             _drawables.Add(_mapRendererService as Drawable);
             _drawables.Add(new FpsTrackerComponent(_config.Resolution.Y));
@@ -86,6 +90,7 @@ namespace WolfRender.Services
                 }
             }
             _playerService.Update(dt);
+            _entityService.Update(dt);
         }
     }
 }
