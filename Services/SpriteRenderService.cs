@@ -20,6 +20,7 @@ namespace WolfRender.Services
         private readonly IAnimationService _animationService;
         private readonly GameConfiguration _gameConfiguration;
         private readonly IMapService _mapService;
+        private readonly IEntityService _entityService;
         private List<Vector2f> _spritePositions;
         private int _resolutionX;
         private int _resolutionY;
@@ -36,7 +37,8 @@ namespace WolfRender.Services
             ITextureService textureService,
             IAnimationService animationService,
             IMapService mapService,
-            IOptions<GameConfiguration> gameConfiguration)
+            IOptions<GameConfiguration> gameConfiguration,
+            IEntityService entityService)
         {
             _logger = logger;
             _playerService = playerService;
@@ -45,6 +47,7 @@ namespace WolfRender.Services
             _animationService = animationService;
             _gameConfiguration = gameConfiguration.Value;
             _mapService = mapService;
+            _entityService = entityService;
             _logger.LogInformation("SpriteRenderService starting");
         }
         
@@ -55,7 +58,10 @@ namespace WolfRender.Services
             
             // Create idle animation (first row)
             _animationService.CreateAnimation("guard", "idle", 0, 8);
-            
+
+            // Create hit animation 
+            _animationService.CreateMultiRowAnimation("guard", "hit", 5, 1, 1);
+
             // Create walk animation (rows 1-4)
             _animationService.CreateMultiRowAnimation("guard", "walk", 1, 4, 8);
 
@@ -64,7 +70,6 @@ namespace WolfRender.Services
 
             // Create death animation (row 7, 8 frames)
             _animationService.CreateMultiRowAnimation("guard", "death", 5, 1, 5);
-
 
             // Create a new sprite with transparency
             _textureService.LoadTexture("barrel", "Assets/barrel.png");
@@ -76,50 +81,36 @@ namespace WolfRender.Services
             _barrelSprite.Origin = new Vector2f(_barrelTexture.Size.X / 2, _barrelTexture.Size.Y / 2);
 
 
-            _guardPosition = new Vector2f(20.5f, 45.5f);
-            _spritePositions = new List<Vector2f>
-            {
-                new Vector2f(20.5f, 46.5f),
-                new Vector2f(20.5f, 44.5f),
-                _guardPosition  // Add guard position
-            };
+            //_guardPosition = new Vector2f(20.5f, 45.5f);
+            //_spritePositions = new List<Vector2f>
+            //{
+            //    new Vector2f(20.5f, 46.5f),
+            //    new Vector2f(20.5f, 44.5f),
+            //    _guardPosition  // Add guard position
+            //};
 
             _resolutionX = _gameConfiguration.Resolution.X;
             _resolutionY = _gameConfiguration.Resolution.Y;
 
-            _entities = new List<IEntity>
-            {
-                new StaticEntity(_textureService, "barrel")
-                {
-                    Position = new Vector2f(20.5f, 46.5f),
-                    Direction = 0
-                },
-                new StaticEntity(_textureService, "barrel")
-                {
-                    Position = new Vector2f(20.5f, 44.5f),
-                    Direction = 0
-                }
-            };
-
             // Create guard entity
-            var guard = new AnimatedEntity(_animationService, "guard")
-            {
-                Position = _guardPosition,
-                Direction = 0
-            };
+            //var guard = new AnimatedEntity(_animationService, "guard")
+            //{
+            //    Position = _guardPosition,
+            //    Direction = 0
+            //};
             
             // Set initial animation
-            guard.SetAnimation("idle");
+            //guard.SetAnimation("idle");
             
             // Add to entities list
-            _entities.Add(guard);
+            //_entities.Add(guard);
         }
 
         public void Draw(RenderTarget target, RenderStates states)
         {
             _wallDistances = _mapService.WallDistances;
             
-            foreach(var entity in _entities)
+            foreach(var entity in _entityService.Entities)
             {
                 switch(entity)
                 {
@@ -133,42 +124,9 @@ namespace WolfRender.Services
             }
         }
 
-        bool isAnimating = false;
         public void Update(float deltaTime)
         {
-            // Update all entities
-            foreach (var entity in _entities)
-            {
-                if (entity is AnimatedEntity animatedEntity)
-                {
-                    animatedEntity.Update(deltaTime);
 
-                    if (isAnimating)
-                        break;
-
-                    // Example: Switch between idle and walk animations
-                    if (Input.IsKeyPressed(Keyboard.Key.E))
-                    {
-                        animatedEntity.SetAnimation("walk");
-                    }
-                    else
-                    {
-                        animatedEntity.SetAnimation("idle");
-                    }
-
-                    if (Input.IsKeyPressed(Keyboard.Key.Q))
-                    {
-                        animatedEntity.SetAnimation("attack");
-                        isAnimating = true;
-                    }
-
-                    if (Input.IsKeyPressed(Keyboard.Key.T))
-                    {
-                        animatedEntity.SetAnimation("death");
-                        isAnimating = true;
-                    }
-                }
-            }
         }
 
         private void RenderAnimatedEntity(RenderTarget target, RenderStates states, AnimatedEntity entity)
@@ -184,15 +142,36 @@ namespace WolfRender.Services
             while (playerToEntityAngle < 0) playerToEntityAngle += 2 * Math.PI;
             while (playerToEntityAngle >= 2 * Math.PI) playerToEntityAngle -= 2 * Math.PI;
             
-            // Calculate sprite index (8 directions)
-            int spriteIndex = (int)Math.Round(playerToEntityAngle / (Math.PI * 2) * 8) % 8;
+            // Calculate sprite index based on entity's direction and player position
+            int spriteIndex;
             
-            // Adjust the index to match the sprite sheet orientation
-            spriteIndex = (8 - spriteIndex) % 8;
-            spriteIndex = (spriteIndex + 4) % 8;
-            
+            if (entity.GetCurrentAnimation() == "idle" || entity.GetCurrentAnimation() == "walk")
+            {
+                // For idle and walk animations, use the entity's direction relative to the player
+                double entityDirection = entity.Direction;
+                double relativeDirection = entityDirection + playerToEntityAngle;
+                
+                // Normalize to [0, 2π)
+                while (relativeDirection < 0) relativeDirection += 2 * Math.PI;
+                while (relativeDirection >= 2 * Math.PI) relativeDirection -= 2 * Math.PI;
+                
+                // Calculate sprite index (8 directions)
+                spriteIndex = (int)Math.Round(relativeDirection / (Math.PI * 2) * 8) % 8;
+                
+                // Adjust the index to match the sprite sheet orientation
+                spriteIndex = (8 - spriteIndex) % 8;
+                spriteIndex = (spriteIndex + 4) % 8;
+            }
+            else
+            {
+                // For other animations (attack, death, etc.), use the angle between player and entity
+                spriteIndex = (int)Math.Round(playerToEntityAngle / (Math.PI * 2) * 8) % 8;
+                spriteIndex = (8 - spriteIndex) % 8;
+                spriteIndex = (spriteIndex + 4) % 8;
+            }
+
             // Get the appropriate sprite based on animation, angle, and time
-            Sprite entitySprite;
+            Sprite entitySprite = null;
             if (entity.GetCurrentAnimation() == "idle")
             {
                 entitySprite = _animationService.GetSprite(entity.SheetName, "idle", spriteIndex);
@@ -207,7 +186,7 @@ namespace WolfRender.Services
                 
                 if(_animationService.CurrentFrameIndex == 3)
                 {
-                    isAnimating = false;
+                    //isAnimating = false;
                     entity.SetAnimation("idle");
                 }
             }
@@ -218,11 +197,6 @@ namespace WolfRender.Services
                     entity.GetCurrentAnimation(),
                     entity.GetAnimationTime(),
                     entity.GetFrameRate());
-
-                if (_animationService.CurrentFrameIndex == 4)
-                {
-                    isAnimating = false;
-                }
             }
             else
             {
@@ -297,7 +271,7 @@ namespace WolfRender.Services
             else if (isPartiallyVisible)
             {
                 // Create a clipped version of the sprite
-                RenderPartiallyOccludedGuard(target, spriteLeft, spriteRight, screenX, scale, entitySprite);
+                RenderPartiallyOccludedGuard(target, spriteLeft, spriteRight, screenX, scale, entitySprite, entity);
             }
 
             // For debugging
@@ -431,7 +405,7 @@ namespace WolfRender.Services
         }
 
         private void RenderPartiallyOccludedGuard(RenderTarget target, int spriteLeft, int spriteRight,
-            float screenX, float scale, Sprite guardSprite)
+            float screenX, float scale, Sprite guardSprite, IEntity entity)
         {
             // Create a render texture the size of the sprite on screen
             int spriteWidth = spriteRight - spriteLeft + 1;
@@ -443,7 +417,7 @@ namespace WolfRender.Services
             guardSprite.Position = new Vector2f(spriteWidth / 2, _resolutionY / 2);
             renderTexture.Draw(guardSprite);
             renderTexture.Display();
-
+            
             // Create a mask to hide occluded parts
             for (int x = 0; x < spriteWidth; x++)
             {
@@ -452,8 +426,8 @@ namespace WolfRender.Services
                 {
                     double wallDist = _wallDistances[worldX];
                     double distance = Math.Sqrt(
-                        Math.Pow(_spritePositions[2].X - _player.Position.X, 2) +
-                        Math.Pow(_spritePositions[2].Y - _player.Position.Y, 2));
+                        Math.Pow(entity.Position.X - _player.Position.X, 2) +
+                        Math.Pow(entity.Position.Y - _player.Position.Y, 2));
 
                     if (distance >= wallDist)
                     {
