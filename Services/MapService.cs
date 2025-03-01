@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using SFML.System;
 using System;
+using System.Collections.Generic;
 using WolfRender.Interfaces;
+using WolfRender.Models;
 
 namespace WolfRender.Services
 {
@@ -12,6 +14,18 @@ namespace WolfRender.Services
         private int[,] _data { get; set; }
         private Vector2i _size;
         public double[] WallDistances { get; set; }
+
+        private List<Vector2i> _directions = new List<Vector2i>
+        {
+            new Vector2i(0, 1),   // North
+            new Vector2i(1, 0),   // East
+            new Vector2i(0, -1),  // South
+            new Vector2i(-1, 0),  // West
+            new Vector2i(1, 1),   // Northeast
+            new Vector2i(1, -1),  // Southeast
+            new Vector2i(-1, -1), // Southwest
+            new Vector2i(-1, 1)   // Northwest
+        };
 
         public MapService(
             ILogger<MapService> logger,
@@ -101,6 +115,123 @@ namespace WolfRender.Services
                 }
             }
             return data;
+        }
+
+        public List<Vector2f> PathFind(Vector2i from, Vector2i to)
+        {
+            var openSet = new List<PathNode>();
+            var closedSet = new HashSet<Vector2i>();
+            
+            PathNode startNode = new PathNode(from);
+            PathNode targetNode = new PathNode(to);
+            
+            openSet.Add(startNode);
+            
+            while (openSet.Count > 0)
+            {
+                // Get node with lowest FCost
+                PathNode currentNode = openSet[0];
+                for (int i = 1; i < openSet.Count; i++)
+                {
+                    if (openSet[i].FCost < currentNode.FCost || 
+                        (openSet[i].FCost == currentNode.FCost && openSet[i].HCost < currentNode.HCost))
+                    {
+                        currentNode = openSet[i];
+                    }
+                }
+                
+                openSet.Remove(currentNode);
+                closedSet.Add(currentNode.Position);
+                
+                // Check if we reached the target
+                if (currentNode.Position == targetNode.Position)
+                {
+                    return RetracePath(startNode, currentNode);
+                }
+                
+                // Check all neighbors
+                foreach (var direction in _directions)
+                {
+                    Vector2i neighborPos = new Vector2i(
+                        currentNode.Position.X + direction.X,
+                        currentNode.Position.Y + direction.Y
+                    );
+                    
+                    // Skip if out of bounds or not walkable
+                    if (!IsPositionValid(neighborPos) || !IsWalkable(neighborPos) || 
+                        closedSet.Contains(neighborPos))
+                    {
+                        continue;
+                    }
+                    
+                    int newGCost = currentNode.GCost + GetDistance(currentNode.Position, neighborPos);
+                    
+                    PathNode neighborNode = openSet.Find(n => n.Position == neighborPos);
+                    
+                    if (neighborNode == null)
+                    {
+                        neighborNode = new PathNode(neighborPos);
+                        neighborNode.GCost = newGCost;
+                        neighborNode.HCost = GetDistance(neighborPos, targetNode.Position);
+                        neighborNode.Parent = currentNode;
+                        openSet.Add(neighborNode);
+                    }
+                    else if (newGCost < neighborNode.GCost)
+                    {
+                        neighborNode.GCost = newGCost;
+                        neighborNode.Parent = currentNode;
+                    }
+                }
+            }
+            
+            // No path found
+            return null;
+        }
+        
+        private bool IsWalkable(Vector2i pos)
+        {
+            // Check if the position is a wall or other unwalkable terrain
+            int tileType = Get(pos);
+            return tileType == 0 || tileType == 3; // Assuming 0 is empty space and 3 is floor
+        }
+        
+        private bool IsPositionValid(Vector2i pos)
+        {
+            return pos.X >= 0 && pos.X < _size.X && 
+                   pos.Y >= 0 && pos.Y < _size.Y;
+        }
+        
+        private int GetDistance(Vector2i a, Vector2i b)
+        {
+            // Manhattan distance for 4-directional movement
+            // return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+            
+            // Diagonal distance for 8-directional movement
+            int dstX = Math.Abs(a.X - b.X);
+            int dstY = Math.Abs(a.Y - b.Y);
+            return (dstX > dstY) ? 
+                14 * dstY + 10 * (dstX - dstY) : 
+                14 * dstX + 10 * (dstY - dstX);
+        }
+        
+        private List<Vector2f> RetracePath(PathNode startNode, PathNode endNode)
+        {
+            List<Vector2f> path = new List<Vector2f>();
+            PathNode currentNode = endNode;
+            
+            while (currentNode != startNode)
+            {
+                // Convert to Vector2f and add 0.5f to center in tile
+                path.Add(new Vector2f(
+                    currentNode.Position.X + 0.5f,
+                    currentNode.Position.Y + 0.5f
+                ));
+                currentNode = currentNode.Parent;
+            }
+            
+            path.Add(new Vector2f(startNode.Position.X + 0.5f, startNode.Position.Y + 0.5f));
+            path.Reverse();
+            return path;
         }
     }
 }

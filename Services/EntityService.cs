@@ -13,6 +13,7 @@ namespace WolfRender.Services
         private List<IEntity> _entities;
         private ITextureService _textureService;
         private IAnimationService _animationService;
+        private IMapService _mapService;
         bool _isAnimating = false;
 
         public List<IEntity> Entities => _entities;
@@ -20,10 +21,12 @@ namespace WolfRender.Services
         public EntityService(
             ILogger<EntityService> logger,
             ITextureService textureService,
-            IAnimationService animationService)
+            IAnimationService animationService,
+            IMapService mapService)
         {
             _textureService = textureService;
             _animationService = animationService;
+            _mapService = mapService;
         }
 
         public void Init()
@@ -60,6 +63,13 @@ namespace WolfRender.Services
                     if (_isAnimating)
                         break;
 
+                    // If the entity is following a path, continue that
+                    if (animatedEntity.IsFollowingPath)
+                    {
+                        animatedEntity.WalkPath(dt); // Pass null to continue current path
+                        continue;
+                    }
+
                     // Direction controls (in radians)
                     if (Input.IsKeyPressed(Keyboard.Key.Num1))
                         animatedEntity.Direction = 0;           // East
@@ -71,15 +81,13 @@ namespace WolfRender.Services
                         animatedEntity.Direction = (float)-Math.PI /2;  // North
                     else if (Input.IsKeyPressed(Keyboard.Key.Num5))
                         animatedEntity.Direction += 0.5f * dt; // Rotate right
+
                     // Animation controls
                     if (Input.IsKeyPressed(Keyboard.Key.E))
                     {
-                        var walkSpeed = 0.8f;
-                        animatedEntity.SetAnimation("walk");
-                        animatedEntity.Position += new Vector2f(walkSpeed * (float)Math.Cos(animatedEntity.Direction),
-                            walkSpeed * -(float)Math.Sin(animatedEntity.Direction)) * dt;
+                        animatedEntity.Walk(dt);
                     }
-                    else
+                    else if (!animatedEntity.IsFollowingPath)
                     {
                         animatedEntity.SetAnimation("idle");
                     }
@@ -99,6 +107,18 @@ namespace WolfRender.Services
                     if (Input.IsKeyPressed(Keyboard.Key.R))
                     {
                         animatedEntity.SetAnimation("hit");
+                    }
+
+                    if (Input.IsKeyPressed(Keyboard.Key.Space))
+                    {
+                        Vector2i fromPos = new Vector2i((int)entity.Position.X, (int)entity.Position.Y);
+                        Vector2i toPos = new Vector2i(10, 50);  // Example destination
+
+                        var path = _mapService.PathFind(fromPos, toPos);
+                        if (path != null)
+                        {
+                            animatedEntity.WalkPath(path, dt);
+                        }
                     }
                 }
             }
