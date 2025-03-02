@@ -14,6 +14,7 @@ namespace WolfRender.Services
         private ITextureService _textureService;
         private IAnimationService _animationService;
         private IMapService _mapService;
+        private IPlayerService _playerService;
         bool _isAnimating = false;
 
         public List<IEntity> Entities => _entities;
@@ -22,11 +23,13 @@ namespace WolfRender.Services
             ILogger<EntityService> logger,
             ITextureService textureService,
             IAnimationService animationService,
-            IMapService mapService)
+            IMapService mapService,
+            IPlayerService playerService)
         {
             _textureService = textureService;
             _animationService = animationService;
             _mapService = mapService;
+            _playerService = playerService;
         }
 
         public void Init()
@@ -112,7 +115,7 @@ namespace WolfRender.Services
                     if (Input.IsKeyPressed(Keyboard.Key.Space))
                     {
                         Vector2i fromPos = new Vector2i((int)entity.Position.X, (int)entity.Position.Y);
-                        Vector2i toPos = new Vector2i(10, 50);  // Example destination
+                        Vector2i toPos = new Vector2i((int)_playerService.Player.Position.X, (int)_playerService.Player.Position.Y); //new Vector2i(10, 50);  // Example destination
 
                         var path = _mapService.PathFind(fromPos, toPos);
                         if (path != null)
