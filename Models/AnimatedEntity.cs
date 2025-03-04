@@ -3,6 +3,7 @@ using SFML.System;
 using System;
 using System.Collections.Generic;
 using WolfRender.Interfaces;
+using WolfRender.Services;
 
 public class AnimatedEntity : IEntity
 {
@@ -13,7 +14,8 @@ public class AnimatedEntity : IEntity
     private float _walkSpeed = 1.0f;
     private Vector2f _position;
     private float _direction;
-    
+    bool _isAnimating = false;
+
     private List<Vector2f> _currentPath;
     private int _currentPathIndex;
     private float _rotationSpeed = 4.0f; // Radians per second
@@ -21,7 +23,7 @@ public class AnimatedEntity : IEntity
     
     public Sprite Sprite { get; private set; }
     public Texture Texture => null; // Not used for animated entities
-    public bool IsAlive { get; set; }
+    public bool IsAlive { get; set; } = true;
     public string SheetName { get; }
 
     public Vector2f Position
@@ -41,6 +43,15 @@ public class AnimatedEntity : IEntity
             _direction = value;
         }
     }
+
+    public bool IsAnimating
+    {
+        get => _isAnimating;
+        set
+        {
+            _isAnimating = value;
+        }
+    }
         
     public bool IsFollowingPath => _currentPath != null && _currentPathIndex < _currentPath.Count;
 
@@ -54,9 +65,6 @@ public class AnimatedEntity : IEntity
     {
         // Update animation time
         _animationTime += deltaTime;
-        
-        // Calculate sprite index based on player position
-        // This will be done in the renderer
     }
     
     public void Walk(float dt)
@@ -151,8 +159,7 @@ public class AnimatedEntity : IEntity
                 // Check if we've reached the end of the path
                 if (_currentPathIndex >= _currentPath.Count)
                 {
-                    _currentPath = null;
-                    SetAnimation("idle");
+                    StopFollowingPath();
                 }
             }
         }

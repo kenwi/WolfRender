@@ -9,5 +9,6 @@ namespace WolfRender.Interfaces
         float Direction { get; set; }
         Sprite Sprite { get; }
         Texture Texture { get;}
+        bool IsAlive { get; set; }
     }
 } 

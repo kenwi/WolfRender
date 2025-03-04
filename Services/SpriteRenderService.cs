@@ -183,11 +183,11 @@ namespace WolfRender.Services
                     entity.GetCurrentAnimation(),
                     entity.GetAnimationTime(),
                     entity.GetFrameRate());
-                
-                if(_animationService.CurrentFrameIndex == 3)
+
+                if (_animationService.CurrentFrameIndex == 3)
                 {
-                    //isAnimating = false;
                     entity.SetAnimation("idle");
+                    entity.IsAnimating = false;
                 }
             }
             else if (entity.GetCurrentAnimation() == "death")
@@ -197,17 +197,22 @@ namespace WolfRender.Services
                     entity.GetCurrentAnimation(),
                     entity.GetAnimationTime(),
                     entity.GetFrameRate());
+                
+                if (_animationService.CurrentFrameIndex == 4)
+                {
+                    entity.IsAlive = false;
+                }
             }
             else
             {
                 entitySprite = _animationService.GetAnimationFrame(
-                    entity.SheetName, 
-                    entity.GetCurrentAnimation(), 
-                    spriteIndex, 
-                    entity.GetAnimationTime(), 
+                    entity.SheetName,
+                    entity.GetCurrentAnimation(),
+                    spriteIndex,
+                    entity.GetAnimationTime(),
                     entity.GetFrameRate());
             }
-            
+
             // Calculate relative angle for screen positioning
             double relativeAngle = playerToEntityAngle - _player.Direction;
 

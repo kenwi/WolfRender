@@ -15,7 +15,6 @@ namespace WolfRender.Services
         private IAnimationService _animationService;
         private IMapService _mapService;
         private IPlayerService _playerService;
-        bool _isAnimating = false;
 
         public List<IEntity> Entities => _entities;
 
@@ -61,9 +60,12 @@ namespace WolfRender.Services
             {
                 if (entity is AnimatedEntity animatedEntity)
                 {
+                    if (!entity.IsAlive)
+                        break;
+
                     animatedEntity.Update(dt);
 
-                    if (_isAnimating)
+                    if (animatedEntity.IsAnimating)
                         break;
 
                     // If the entity is following a path, continue that
@@ -98,13 +100,13 @@ namespace WolfRender.Services
                     if (Input.IsKeyPressed(Keyboard.Key.Q))
                     {
                         animatedEntity.SetAnimation("attack");
-                        _isAnimating = true;
+                        animatedEntity.IsAnimating = true;
                     }
 
                     if (Input.IsKeyPressed(Keyboard.Key.T))
                     {
                         animatedEntity.SetAnimation("death");
-                        _isAnimating = true;
+                        animatedEntity.IsAnimating = true;
                     }
 
                     if (Input.IsKeyPressed(Keyboard.Key.R))
