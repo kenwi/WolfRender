@@ -280,7 +280,7 @@ namespace WolfRender.Services
             }
 
             // For debugging
-            if (Input.IsKeyPressed(Keyboard.Key.Space))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
             {
                 Console.WriteLine($"Player: {_player.Position}, Guard: {entity.Position}");
                 Console.WriteLine($"Angle: {playerToEntityAngle * 180 / Math.PI}°, Sprite: {spriteIndex}");

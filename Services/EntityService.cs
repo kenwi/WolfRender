@@ -75,20 +75,21 @@ namespace WolfRender.Services
                         continue;
                     }
 
+                    
                     // Direction controls (in radians)
-                    if (Input.IsKeyPressed(Keyboard.Key.Num1))
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.Num1))
                         animatedEntity.Direction = 0;           // East
-                    else if (Input.IsKeyPressed(Keyboard.Key.Num2))
+                    else if (Keyboard.IsKeyPressed(Keyboard.Key.Num2))
                         animatedEntity.Direction = (float)Math.PI / 2; // South
-                    else if (Input.IsKeyPressed(Keyboard.Key.Num3))
+                    else if (Keyboard.IsKeyPressed(Keyboard.Key.Num3))
                         animatedEntity.Direction = (float)Math.PI;     // West
-                    else if (Input.IsKeyPressed(Keyboard.Key.Num4))
+                    else if (Keyboard.IsKeyPressed(Keyboard.Key.Num4))
                         animatedEntity.Direction = (float)-Math.PI /2;  // North
-                    else if (Input.IsKeyPressed(Keyboard.Key.Num5))
+                    else if (Keyboard.IsKeyPressed(Keyboard.Key.Num5))
                         animatedEntity.Direction += 0.5f * dt; // Rotate right
 
                     // Animation controls
-                    if (Input.IsKeyPressed(Keyboard.Key.E))
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.E))
                     {
                         animatedEntity.Walk(dt);
                     }
@@ -97,24 +98,24 @@ namespace WolfRender.Services
                         animatedEntity.SetAnimation("idle");
                     }
 
-                    if (Input.IsKeyPressed(Keyboard.Key.Q))
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.Q))
                     {
                         animatedEntity.SetAnimation("attack");
                         animatedEntity.IsAnimating = true;
                     }
 
-                    if (Input.IsKeyPressed(Keyboard.Key.T))
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.T))
                     {
                         animatedEntity.SetAnimation("death");
                         animatedEntity.IsAnimating = true;
                     }
 
-                    if (Input.IsKeyPressed(Keyboard.Key.R))
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.R))
                     {
                         animatedEntity.SetAnimation("hit");
                     }
 
-                    if (Input.IsKeyPressed(Keyboard.Key.Space))
+                    if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
                     {
                         Vector2i fromPos = new Vector2i((int)entity.Position.X, (int)entity.Position.Y);
                         Vector2i toPos = new Vector2i((int)_playerService.Player.Position.X, (int)_playerService.Player.Position.Y); //new Vector2i(10, 50);  // Example destination

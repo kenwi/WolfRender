@@ -106,13 +106,13 @@ namespace WolfRender.Services
         {
             Vector2f input = new Vector2f(0, 0);
 
-            if (Input.IsKeyPressed(Keyboard.Key.W))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.W))
                 input.X += 1;
-            if (Input.IsKeyPressed(Keyboard.Key.S))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.S))
                 input.X -= 1;
-            if (Input.IsKeyPressed(Keyboard.Key.D))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.D))
                 input.Y += 1;
-            if (Input.IsKeyPressed(Keyboard.Key.A))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.A))
                 input.Y -= 1;
 
             return input;
@@ -124,6 +124,11 @@ namespace WolfRender.Services
             {
                 _player.Fov += e.Delta * 0.1f;
                 _player.FovHalf = _player.Fov * 0.5f;
+
+                // Log FoV changes, convert to degrees
+                _logger.LogInformation($"FoV: {_player.Fov * 180 / MathF.PI}° {_player.Fov} {_player.FovHalf}");
+
+
             };
             _windowService.Window.MouseButtonPressed += (s, e) =>
             {
@@ -157,22 +162,22 @@ namespace WolfRender.Services
 
         private void GetKeypressInput()
         {
-            if (Input.IsKeyPressed(Keyboard.Key.Escape))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
             {
                 _windowService.StopAsync(CancellationToken.None);
             }
 
-            if (Input.IsKeyPressed(Keyboard.Key.M))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.M))
             {
                 _windowService.IsMouseVisible = !_windowService.IsMouseVisible;
             }
 
-            if (Input.IsKeyPressed(Keyboard.Key.PageUp))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.PageUp))
             {
                 _gameConfiguration.ShadingExponent += 10.0f * _deltaTime;
                 _mapRendererService.CalculateZBuffer();
             }
-            if (Input.IsKeyPressed(Keyboard.Key.PageDown))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.PageDown))
             {
                 if (_gameConfiguration.ShadingExponent <= 0.01)
                 {
@@ -181,7 +186,7 @@ namespace WolfRender.Services
                 _gameConfiguration.ShadingExponent -= 10.0f * _deltaTime;
                 _mapRendererService.CalculateZBuffer();
             }
-            if (Input.IsKeyPressed(Keyboard.Key.Home))
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Home))
             {
                 _gameConfiguration.ShadingExponent = 5;
                 _mapRendererService.CalculateZBuffer();
