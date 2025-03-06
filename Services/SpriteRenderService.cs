@@ -21,15 +21,11 @@ namespace WolfRender.Services
         private readonly GameConfiguration _gameConfiguration;
         private readonly IMapService _mapService;
         private readonly IEntityService _entityService;
-        private List<Vector2f> _spritePositions;
         private int _resolutionX;
         private int _resolutionY;
-        private Vector2f _guardPosition;
         private Texture _barrelTexture;
         private Sprite _barrelSprite;
         private double[] _wallDistances;
-        private List<IEntity> _entities;
-
 
         public SpriteRenderService(
             IPlayerService playerService,
@@ -80,30 +76,8 @@ namespace WolfRender.Services
             _barrelSprite.Position = new Vector2f(20.0f, 45.5f);
             _barrelSprite.Origin = new Vector2f(_barrelTexture.Size.X / 2, _barrelTexture.Size.Y / 2);
 
-
-            //_guardPosition = new Vector2f(20.5f, 45.5f);
-            //_spritePositions = new List<Vector2f>
-            //{
-            //    new Vector2f(20.5f, 46.5f),
-            //    new Vector2f(20.5f, 44.5f),
-            //    _guardPosition  // Add guard position
-            //};
-
             _resolutionX = _gameConfiguration.Resolution.X;
             _resolutionY = _gameConfiguration.Resolution.Y;
-
-            // Create guard entity
-            //var guard = new AnimatedEntity(_animationService, "guard")
-            //{
-            //    Position = _guardPosition,
-            //    Direction = 0
-            //};
-            
-            // Set initial animation
-            //guard.SetAnimation("idle");
-            
-            // Add to entities list
-            //_entities.Add(guard);
         }
 
         public void Draw(RenderTarget target, RenderStates states)
