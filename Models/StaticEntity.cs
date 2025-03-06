@@ -11,7 +11,7 @@ namespace WolfRender.Models
         private Sprite _sprite;
         private Vector2f _position;
         private float _direction;
-
+        public bool IsAlive { get; set; }
         public Sprite Sprite
         {
             get => _sprite;
