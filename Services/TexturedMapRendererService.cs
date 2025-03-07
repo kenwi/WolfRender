@@ -117,8 +117,7 @@ namespace WolfRender.Services
 
         public void Draw(RenderTarget target, RenderStates states)
         {
-
-            Parallel.For(0, (int)_gameConfiguration.Resolution.X, x =>
+            Parallel.For(0, _gameConfiguration.Resolution.X, x =>
             {
                 double angle = _player.Direction - _player.FovHalf + (x * _player.Fov) / _gameConfiguration.Resolution.X;
 

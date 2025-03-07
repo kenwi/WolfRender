@@ -201,7 +201,6 @@ namespace WolfRender.Services
             
             // Clamp angle index to valid range
             angleIndex = Math.Clamp(angleIndex, 0, frameSprites.Count - 1);
-            _logger.LogInformation($"AnimationTime: {animationTime}");
 
             return frameSprites[angleIndex];
         }
