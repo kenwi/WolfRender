@@ -129,5 +129,33 @@ namespace WolfRender.Services
                 }
             }
         }
+
+        public void AddEntity(IEntity entity)
+        {
+            _entities.Add(entity);
+        }
+
+        public void CreateEntitiesFromMapData()
+        {
+            // Create entities from map data
+            for (int y = 0; y < _mapService.MapHeight; y++)
+            {
+                for (int x = 0; x < _mapService.MapWidth; x++)
+                {
+                    int id = _mapService.Get(new Vector2i(x, y));
+                    if (id == 0)
+                        continue;
+
+                    IEntity entity = null;
+                    switch (id)
+                    {
+                        case 1:
+                            entity = new StaticEntity(_textureService, "barrel");
+                            break;
+                    }
+                }
+            }
+        }
+    
     }
 }
