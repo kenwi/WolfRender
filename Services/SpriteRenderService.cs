@@ -5,6 +5,7 @@ using SFML.System;
 using SFML.Window;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using WolfRender.Interfaces;
 using WolfRender.Models;
 using WolfRender.Models.Configuration;
@@ -84,9 +85,20 @@ namespace WolfRender.Services
         {
             _wallDistances = _mapService.WallDistances;
             
-            foreach(var entity in _entityService.Entities)
+            // Create a list of entities with their distances
+            var entitiesWithDistance = _entityService.Entities.Select(entity => new
             {
-                switch(entity)
+                Entity = entity,
+                Distance = Math.Sqrt(
+                    Math.Pow(entity.Position.X - _player.Position.X, 2) +
+                    Math.Pow(entity.Position.Y - _player.Position.Y, 2)
+                )
+            }).OrderByDescending(x => x.Distance).ToList();
+
+            // Render entities from furthest to closest
+            foreach (var entityData in entitiesWithDistance)
+            {
+                switch(entityData.Entity)
                 {
                     case StaticEntity staticEntity:
                         RenderStaticSprite(target, states, staticEntity);
