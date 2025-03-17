@@ -2,6 +2,7 @@
 {
     public enum EntityType
     {
-        Guard = 7
+        Guard = 7,
+        Barrel = 8,
     }
 }

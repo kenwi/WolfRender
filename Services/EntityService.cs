@@ -153,9 +153,19 @@ namespace WolfRender.Services
                             {
                                 Position = new Vector2f(y + 0.5f, x + 0.5f) // Coordinates are flipped
                             };
-                            _entities.Add(entity);
+                            break;
+                        case (int)EntityType.Barrel:
+                            entity = new StaticEntity(_textureService, "barrel")
+                            {
+                                Position = new Vector2f(y + 0.5f, x + 0.5f)
+                            };
                             break;
                     }
+
+                    if (entity != null)
+                    {
+                        AddEntity(entity);
+                    }   
                 }
             }
         }

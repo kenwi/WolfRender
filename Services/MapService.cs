@@ -168,6 +168,11 @@ namespace WolfRender.Services
                     {
                         data[x, y] = (int)EntityType.Guard;
                     }
+
+                    if (pixel.R == 255 && pixel.G == 169 && pixel.B == 122)
+                    {
+                        data[x, y] = (int)EntityType.Barrel;
+                    }
                 }
             }
             return data;
