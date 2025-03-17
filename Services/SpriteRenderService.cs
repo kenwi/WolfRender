@@ -27,6 +27,7 @@ namespace WolfRender.Services
         private Texture _barrelTexture;
         private Sprite _barrelSprite;
         private double[] _wallDistances;
+        private Sprite _weaponSprite;
 
         public SpriteRenderService(
             IPlayerService playerService,
@@ -68,6 +69,13 @@ namespace WolfRender.Services
             // Create death animation (row 7, 8 frames)
             _animationService.CreateMultiRowAnimation("guard", "death", 5, 1, 5);
 
+            // Load weapons spritesheet
+            _animationService.LoadSpriteSheet("weapons", "Assets/weapons.png");
+
+            // Create pistol animation (row 2, 5 frames, paddingY = 15)
+            _animationService.CreateMultiRowAnimation("weapons", "shoot", 1, 1, 5, 1, 15);
+
+
             // Create a new sprite with transparency
             _textureService.LoadTexture("barrel", "Assets/barrel.png");
             var barrelImage = _textureService.GetTextureImage("barrel");
@@ -107,6 +115,15 @@ namespace WolfRender.Services
                         RenderAnimatedEntity(target, states, animatedEntity);
                         break;
                 }
+            }
+         
+            if (_playerService.CurrentWeaponSprite != null)
+            {
+                _weaponSprite = _playerService.CurrentWeaponSprite;
+                _weaponSprite.Scale = new Vector2f(8, 8);
+                _weaponSprite.Position = new Vector2f(_resolutionX / 2, _resolutionY - (_weaponSprite.TextureRect.Height / 2) * 8);
+
+                target.Draw(_weaponSprite, states);
             }
         }
 

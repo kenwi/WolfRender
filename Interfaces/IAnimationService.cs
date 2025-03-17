@@ -10,7 +10,7 @@ namespace WolfRender.Interfaces
         Sprite GetSprite(string sheetName, string animationName, int angleIndex);
         Sprite GetSprite(string sheetName, string animationName, float angle);
         Sprite GetSpriteForRelativeAngle(string sheetName, string animationName, float relativeAngle);
-        void CreateMultiRowAnimation(string sheetName, string animationName, int startRow, int rowCount, int framesPerRow);
+        void CreateMultiRowAnimation(string sheetName, string animationName, int startRow, int rowCount, int framesPerRow, int paddingX = 0, int paddingY = 0);
         Sprite GetAnimationFrame(string sheetName, string animationName, int angleIndex, float animationTime, float frameRate);
         Sprite GetAnimationFrame(string sheetName, string animationName, float animationTime, float frameRate);
     }

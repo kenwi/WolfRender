@@ -11,6 +11,7 @@ namespace WolfRender.Models
         public double FovHalf { get; set; }
         public double Direction { get; set; } = Math.PI;
         public float RotationSpeed { get; } = 3.0f;
+        public bool IsShooting { get; set; }
         public Player()
         {
             FovHalf = Fov / 2.0;

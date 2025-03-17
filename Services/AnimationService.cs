@@ -76,7 +76,7 @@ namespace WolfRender.Services
             _logger.LogInformation($"Created animation: {animationName} from {sheetName}, row {row}");
         }
         
-        public void CreateMultiRowAnimation(string sheetName, string animationName, int startRow, int rowCount, int framesPerRow)
+        public void CreateMultiRowAnimation(string sheetName, string animationName, int startRow, int rowCount, int framesPerRow, int paddingX = 0, int paddingY = 0)
         {
             if (!_spriteSheets.ContainsKey(sheetName))
             {
@@ -88,11 +88,17 @@ namespace WolfRender.Services
             
             if (rowCount == 1)
             {
-                var rowSprites = new List<Sprite>();
-                for (int column = 0; column < framesPerRow; column++)
+                Vector2i padding = new Vector2i(SPRITE_PADDING, SPRITE_PADDING);
+                if (paddingX > 0 && paddingY > 0)
                 {
-                    int x = column * (SPRITE_SIZE + SPRITE_PADDING);
-                    int y = startRow * (SPRITE_SIZE + SPRITE_PADDING);
+                    padding = new Vector2i(paddingX, paddingY);
+                }
+
+                var rowSprites = new List<Sprite>();
+                for (int column = 1; column < framesPerRow; column++)
+                {
+                    int x = column * (SPRITE_SIZE + padding.X);
+                    int y = startRow * (SPRITE_SIZE + padding.Y);
                     Sprite sprite = new Sprite(_spriteSheets[sheetName], new IntRect(x, y, SPRITE_SIZE, SPRITE_SIZE));
                     sprite.Origin = new Vector2f(SPRITE_SIZE / 2, SPRITE_SIZE / 2);
                     rowSprites.Add(sprite);

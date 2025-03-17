@@ -9,5 +9,6 @@ namespace WolfRender.Interfaces
         double FovHalf { get; set; }
         double Direction { get; set; }
         float RotationSpeed { get; }
+        bool IsShooting { get; set; }
     }
 }
