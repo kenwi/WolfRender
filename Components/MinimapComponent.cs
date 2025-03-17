@@ -4,6 +4,8 @@ using System.Numerics;
 using System;
 using WolfRender.Interfaces;
 using WolfRender.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WolfRender.Components
 {
@@ -15,12 +17,15 @@ namespace WolfRender.Components
         private CircleShape _playerDot;
         private ConvexShape _playerFov;
         private float previousFov;
-
+        private IEntityService _entityService;
         private const float MINIMAP_SCALE = 4.0f;
-
-        public MinimapComponent(Vector2i mapSize, int windowWidth, Texture mapTexture, IPlayer player)
+        private List<CircleShape> _enemyCircles = new List<CircleShape>();
+        private List<AnimatedEntity> _animatedEntities;
+        public MinimapComponent(Vector2i mapSize, int windowWidth, Texture mapTexture, IPlayer player, IEntityService entityService)
         {
             _player = player;
+            _entityService = entityService;
+
             // Initialize minimap elements
             _minimapBackground = new RectangleShape(new Vector2f(mapSize.X * MINIMAP_SCALE, mapSize.Y * MINIMAP_SCALE));
             _minimapBackground.FillColor = new Color(0, 0, 0, 128);  // Semi-transparent black
@@ -32,10 +37,22 @@ namespace WolfRender.Components
             _minimapSprite.Color = new Color(255, 255, 255, 64);  // Semi-transparent white
 
             _playerDot = new CircleShape(2);  // 3px radius
-            _playerDot.FillColor = Color.Red;
+            _playerDot.FillColor = new Color(0, 139, 0);
 
             _playerFov = new ConvexShape(3);  // Triangle shape
             _playerFov.FillColor = new Color(0, 0, 128, 64);
+
+            _animatedEntities = _entityService.Entities.OfType<AnimatedEntity>().ToList();
+            foreach(var entity in _animatedEntities)
+            {
+                if (entity is AnimatedEntity)
+                {
+                    var circle = new CircleShape(2);
+                    circle.FillColor = new Color(139, 0, 0);
+                    _enemyCircles.Add(circle);
+                }
+            }
+
             UpdateFovCone();
         }
 
@@ -45,6 +62,11 @@ namespace WolfRender.Components
             target.Draw(_minimapSprite);
             target.Draw(_playerDot);
             target.Draw(_playerFov);
+
+            foreach(var circle in _enemyCircles)
+            {
+                target.Draw(circle);
+            }
         }
 
         private void UpdateFovCone()
@@ -74,6 +96,14 @@ namespace WolfRender.Components
             {
                 UpdateFovCone();
                 previousFov = _player.Fov;
+            }
+
+            foreach(var circle in _enemyCircles)
+            {
+                var entity = _animatedEntities[_enemyCircles.IndexOf(circle)];
+                circle.Position = new Vector2f(
+                    _minimapSprite.Position.X + (entity.Position.X * MINIMAP_SCALE) - circle.Radius,
+                    _minimapSprite.Position.Y + (entity.Position.Y * MINIMAP_SCALE) - circle.Radius);
             }
         }
     }

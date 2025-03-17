@@ -51,7 +51,7 @@ namespace WolfRender.Services
 
             _drawables.Add(_mapRendererService as Drawable);
             _drawables.Add(new FpsTrackerComponent(_config.Resolution.Y));
-            _drawables.Add(new MinimapComponent(new Vector2i(64, 64), _config.Resolution.X, _mapRendererService.MapTexture, _playerService.Player));
+            _drawables.Add(new MinimapComponent(new Vector2i(64, 64), _config.Resolution.X, _mapRendererService.MapTexture, _playerService.Player, _entityService));
             _drawables.Add(_spriteRendererService as Drawable);
 
             _logger.LogInformation("GameService initialized with window service");
