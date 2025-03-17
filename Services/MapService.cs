@@ -15,6 +15,9 @@ namespace WolfRender.Services
         private int[,] _pathData { get; set; }
         private Vector2i _size;
         public double[] WallDistances { get; set; }
+        public int MapWidth => _size.X;
+        public int MapHeight => _size.Y;
+        public int[,] PathData => _pathData;
 
         private List<Vector2i> _directions = new List<Vector2i>
         {
@@ -123,12 +126,6 @@ namespace WolfRender.Services
                     {
                         data[x, y] = 5;
                     }
-
-                    // Path tracing avoidance
-                    if (pixel.R == 200 && pixel.G == 191 && pixel.B == 231)
-                    {
-                        data[x, y] = 6;
-                    }
                 }
             }
             return data;
@@ -165,6 +162,11 @@ namespace WolfRender.Services
                     if (pixel.R == 200 && pixel.G == 191 && pixel.B == 231)
                     {
                         data[x, y] = 6;
+                    }
+
+                    if (pixel.R == 0 && pixel.G == 0 && pixel.B == 0)
+                    {
+                        data[x, y] = (int)EntityType.Guard;
                     }
                 }
             }

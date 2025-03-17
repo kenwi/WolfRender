@@ -192,12 +192,12 @@ namespace WolfRender.Services
                 wallX -= Math.Floor(wallX);
 
                 // Calculate texture coordinates based on the 64x64 texture size
-                int wallTexX = (int)(wallX * _textureSize) & (_textureSize - 1); // Use 64 for texture size
+                int wallTexX = (int)(wallX * _textureSize) & (_textureSize - 1);
                 if ((side == 0 && rayDirX > 0) || (side == 1 && rayDirY < 0))
                     wallTexX = (_textureSize - 1) - wallTexX;
 
                 // Precalculate texture step and position
-                double step = _textureSize / (double)lineHeight; // Use 64 for texture size
+                double step = _textureSize / (double)lineHeight;
                 double texPos = (drawStart - _halfHeight + lineHeight / 2.0) * step;
 
                 // Calculate wall shading using perpendicular distance
@@ -207,10 +207,10 @@ namespace WolfRender.Services
                 int xOffset = x;
                 for (int y = drawStart; y < drawEnd; y++)
                 {
-                    int wallTexY = (int)texPos & (_textureSize - 1); // Use 64 for texture size
+                    int wallTexY = (int)texPos & (_textureSize - 1);
                     texPos += step;
 
-                    // Get the color from the BlueStone texture
+                    // Get the color from the texture
                     int colorIdx = wallTexX + wallTexY * _textureSize; // Corrected index calculation
                     int[] currentTexture = _textures[textureIdx];
                     int wallColor = currentTexture[colorIdx];
@@ -337,7 +337,7 @@ namespace WolfRender.Services
         {
             for (int y = 0; y < _resolutionY; y++)
             {
-                double currentDist = Math.Abs(_resolutionY / (2.0 * y - _resolutionY)); // Ensure it's positive
+                double currentDist = Math.Abs(_resolutionY / (2.0 * y - _resolutionY));
                 float ceilingShade = CalculateShade(currentDist);
                 _zBuffer[y] = ceilingShade;
             }
@@ -353,7 +353,7 @@ namespace WolfRender.Services
             {
                 // Convert wall distance to a color intensity
                 double distance = _wallDistances[x];
-                byte intensity = (byte)(Math.Min(255, (distance * 10))); // Adjust multiplier to taste
+                byte intensity = (byte)(Math.Min(255, (distance * 10)));
                 
                 // Draw a vertical line in this column
                 for (int y = 0; y < _resolutionY; y++)

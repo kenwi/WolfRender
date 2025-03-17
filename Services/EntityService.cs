@@ -51,6 +51,7 @@ namespace WolfRender.Services
                     Direction = 0
                 }
             };
+            CreateEntitiesFromPathData();
         }
 
         public void Update(float dt)
@@ -74,7 +75,6 @@ namespace WolfRender.Services
                         animatedEntity.WalkPath(dt); // Pass null to continue current path
                         continue;
                     }
-
                     
                     // Direction controls (in radians)
                     if (Keyboard.IsKeyPressed(Keyboard.Key.Num1))
@@ -135,22 +135,25 @@ namespace WolfRender.Services
             _entities.Add(entity);
         }
 
-        public void CreateEntitiesFromMapData()
+        public void CreateEntitiesFromPathData()
         {
-            // Create entities from map data
-            for (int y = 0; y < _mapService.MapHeight; y++)
-            {
-                for (int x = 0; x < _mapService.MapWidth; x++)
-                {
-                    int id = _mapService.Get(new Vector2i(x, y));
-                    if (id == 0)
-                        continue;
+            var data = _mapService.PathData;
 
+            // Create entities from map data
+            for (int x = 0; x < _mapService.MapWidth; x++)
+            {
+                for (int y = 0; y < _mapService.MapHeight; y++)
+                {
+                    var id = data[y, x];
                     IEntity entity = null;
                     switch (id)
                     {
-                        case 1:
-                            entity = new StaticEntity(_textureService, "barrel");
+                        case (int)EntityType.Guard:
+                            entity = new AnimatedEntity(_animationService, "guard")
+                            {
+                                Position = new Vector2f(y + 0.5f, x + 0.5f) // Coordinates are flipped
+                            };
+                            _entities.Add(entity);
                             break;
                     }
                 }
