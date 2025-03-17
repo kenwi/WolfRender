@@ -380,6 +380,7 @@ namespace WolfRender.Services
                     mask.Position = new Vector2f(x, 0);
                     mask.FillColor = Color.Transparent;
                     renderTexture.Draw(mask, new RenderStates(BlendMode.None));
+                    mask.Dispose();
                 }
             }
             renderTexture.Display();
@@ -427,6 +428,7 @@ namespace WolfRender.Services
                         mask.Position = new Vector2f(x, 0);
                         mask.FillColor = Color.Transparent;
                         renderTexture.Draw(mask, new RenderStates(BlendMode.None));
+                        mask.Dispose();
                     }
                 }
             }
@@ -439,6 +441,7 @@ namespace WolfRender.Services
 
             // Clean up
             renderTexture.Dispose();
+            clippedSprite.Dispose();
         }
     }
 }
