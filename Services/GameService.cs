@@ -45,9 +45,9 @@ namespace WolfRender.Services
             _window = windowService.Window;
 
             _mapRendererService.Init();
-            _playerService.Init(windowService, _mapRendererService);
             _spriteRendererService.Init();
             _entityService.Init();
+            _playerService.Init(windowService, _mapRendererService, _entityService);
 
             _drawables.Add(_mapRendererService as Drawable);
             _drawables.Add(new FpsTrackerComponent(_config.Resolution.Y));

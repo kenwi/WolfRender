@@ -8,6 +8,7 @@ using System.Threading;
 using WolfRender.Interfaces;
 using WolfRender.Models;
 using WolfRender.Models.Configuration;
+using System.Linq;
 
 namespace WolfRender.Services
 {
@@ -34,26 +35,31 @@ namespace WolfRender.Services
         float _deltaTime;
         Sprite _currentWeaponSprite;
         float _weaponAnimationTime;
+        private IEntityService _entityService;
+        private readonly ICollisionService _collisionService;
 
         public PlayerService(
             ILogger<PlayerService> logger,
             IMapService mapService,
             IOptions<GameConfiguration> gameConfiguration,
-            IAnimationService animationService)
+            IAnimationService animationService,
+            ICollisionService collisionService)
         {
             _logger = logger;
             _mapService = mapService;
             _gameConfiguration = gameConfiguration.Value;
             _player = new Player();
             _animationService = animationService;
+            _collisionService = collisionService;
             _logger.LogInformation("PlayerService starting");
         }
 
-        public void Init(IWindowService windowService, IMapRendererService mapRendererService)
+        public void Init(IWindowService windowService, IMapRendererService mapRendererService, IEntityService entityService)
         {
             _mapRendererService = mapRendererService;
             _windowService = windowService;
             _windowService.IsMouseVisible = false;
+            _entityService = entityService;
             RegisterMouseWheelEvents();
 
             _logger.LogInformation("PlayerService initialized with window service");
@@ -102,8 +108,8 @@ namespace WolfRender.Services
                 _player.Position.Y + velocity.Y * deltaTime
             );
 
-            // Collision detection with walls
-            HandleCollision(newPosition);
+            // Apply collision detection using the CollisionService
+            _player.Position = _collisionService.GetValidPosition(_player.Position, newPosition);
 
             // Get mouse delta and rotate player
             HandleMouseRotation(deltaTime);
@@ -111,6 +117,7 @@ namespace WolfRender.Services
             HandleWeaponsShooting(deltaTime);
         }
 
+        bool hasCheckedLineOfSight = false;
         private void HandleWeaponsShooting(float deltaTime)
         {
             if (_currentWeaponSprite == null)
@@ -130,8 +137,47 @@ namespace WolfRender.Services
                 {
                     _player.IsShooting = false;
                     _weaponAnimationTime = 0;
+                    hasCheckedLineOfSight = false;
                 }
                 _currentWeaponSprite = _animationService.GetAnimationFrame("weapons", "shoot", _weaponAnimationTime, 16);
+
+                if (!hasCheckedLineOfSight)
+                {
+                    foreach(var entity in _entityService.Entities)
+                    {
+                        if (entity is AnimatedEntity animatedEntity)
+                        {
+                            if (entity.Sprite == null || !entity.IsAlive)
+                            {
+                                continue;
+                            }
+
+                            var screenSpacePosition = entity.Sprite.Position;
+                            //var crosshairPosition = new Vector2f(_windowService.WindowCenter.X, _windowService.WindowCenter.Y);
+                            var crosshairPosition = new Vector2f(1024 / 2, 768 / 2);
+                            var spriteWidth = (entity.Sprite.TextureRect.Width - 40) * entity.Sprite.Scale.X;
+                            var spriteHeight = entity.Sprite.TextureRect.Height * entity.Sprite.Scale.Y;
+                            
+                            // Check if crosshair is within sprite bounds
+                            bool isWithinBounds = 
+                                crosshairPosition.X >= screenSpacePosition.X - spriteWidth/2 &&
+                                crosshairPosition.X <= screenSpacePosition.X + spriteWidth/2 &&
+                                crosshairPosition.Y >= screenSpacePosition.Y - spriteHeight/2 &&
+                                crosshairPosition.Y <= screenSpacePosition.Y + spriteHeight/2;
+
+                            if (isWithinBounds && _collisionService.HasLineOfSight(_player.Position, animatedEntity.Position))
+                            {
+                                // Hit the entity!
+                                animatedEntity.StopFollowingPath();
+                                animatedEntity.SetAnimation("death");
+                                _logger.LogInformation($"Hit entity at screen position {screenSpacePosition}");
+                                break;
+                            }
+                        }
+                    }
+
+                    hasCheckedLineOfSight = true;
+                }
             }
         }
 
@@ -224,18 +270,17 @@ namespace WolfRender.Services
                 _gameConfiguration.ShadingExponent = 5;
                 _mapRendererService.CalculateZBuffer();
             }
-        }
 
-        private void HandleCollision(Vector2f newPosition)
-        {
-            int[] walkablePixelIds = [0, 3];
-            foreach(var id in walkablePixelIds)
+            if (Keyboard.IsKeyPressed(Keyboard.Key.R))
             {
-                if (_mapService.Get(new Vector2i((int)newPosition.X, (int)_player.Position.Y)) == id)
-                    _player.Position = new Vector2f(newPosition.X, _player.Position.Y);
-
-                if (_mapService.Get(new Vector2i((int)_player.Position.X, (int)newPosition.Y)) == id)
-                    _player.Position = new Vector2f(_player.Position.X, newPosition.Y);
+                _entityService.Entities.ForEach(entity =>
+                {
+                    if (entity is AnimatedEntity animatedEntity)
+                    {
+                        animatedEntity.IsAlive = true;
+                        animatedEntity.SetAnimation("idle");
+                    }
+                });
             }
         }
     }

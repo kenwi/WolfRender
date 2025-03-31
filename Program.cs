@@ -24,6 +24,7 @@ namespace WolfRender
                     services.AddSingleton<IMapService, MapService>();
                     services.AddSingleton<IAnimationService, AnimationService>();
                     services.AddSingleton<IEntityService, EntityService>();
+                    services.AddSingleton<ICollisionService, CollisionService>();
 
                     services.AddHostedService<WindowService>();
                 })

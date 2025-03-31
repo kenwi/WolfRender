@@ -7,6 +7,6 @@ namespace WolfRender.Interfaces
         Sprite CurrentWeaponSprite { get; }
         IPlayer Player { get; }
         void Update(float deltaTime);
-        void Init(IWindowService windowService, IMapRendererService mapRendererService);
+        void Init(IWindowService windowService, IMapRendererService mapRendererService, IEntityService _entityService);
     }
 }

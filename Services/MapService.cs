@@ -166,12 +166,12 @@ namespace WolfRender.Services
 
                     if (pixel.R == 0 && pixel.G == 0 && pixel.B == 0)
                     {
-                        data[x, y] = (int)EntityType.Guard;
+                        data[x, y] = (int)Models.EntityType.Guard;
                     }
 
                     if (pixel.R == 255 && pixel.G == 169 && pixel.B == 122)
                     {
-                        data[x, y] = (int)EntityType.Barrel;
+                        data[x, y] = (int)Models.EntityType.Barrel;
                     }
                 }
             }
