@@ -30,8 +30,10 @@ public class AnimatedEntity : IEntity
     private int _currentPathIndex;
     private float _rotationSpeed = 4.0f; // Radians per second
     private const float POSITION_THRESHOLD = 0.1f; // How close we need to be to a node to consider it reached
-    
-    public Sprite Sprite { get; private set; }
+
+    public int SpriteLeft { get; set; }
+    public int SpriteRight { get; set; }
+    public Sprite Sprite { get; set; }
     public Texture Texture => null; // Not used for animated entities
     public bool IsAlive { get; set; } = true;
     public string SheetName { get; }
@@ -81,6 +83,9 @@ public class AnimatedEntity : IEntity
     
     public void Update(float deltaTime)
     {
+        if (!IsAlive)
+            return;
+
         // Update animation time
         _animationTime += deltaTime;
 
@@ -88,10 +93,19 @@ public class AnimatedEntity : IEntity
         CheckPlayerVisibility();
 
         // Handle wandering behavior when idle
+        if (GetCurrentAnimation() == "death")
+        {
+            if (GetAnimationTime() >= 1.5f)
+            {
+                IsAlive = false;
+            }
+            return;
+        }
+
         if (_currentAnimation == "idle" && !IsFollowingPath)
         {
             _idleTimer += deltaTime;
-            
+
             if (_idleTimer >= IDLE_WANDER_INTERVAL)
             {
                 TryWanderToNewLocation();
