@@ -275,11 +275,17 @@ namespace WolfRender.Services
                 entitySprite.Scale = new Vector2f(scale * 2, scale * 2);
                 entitySprite.Position = new Vector2f(screenX, _resolutionY / 2);
                 target.Draw(entitySprite, states);
+                entity.Sprite = entitySprite;
+                entity.SpriteLeft = spriteLeft;
+                entity.SpriteRight = spriteRight;
             }
             else if (isPartiallyVisible)
             {
                 // Create a clipped version of the sprite
-                RenderPartiallyOccludedGuard(target, spriteLeft, spriteRight, screenX, scale, entitySprite, entity);
+                var sprite = RenderPartiallyOccludedGuard(target, spriteLeft, spriteRight, screenX, scale, entitySprite, entity);
+                entity.Sprite = sprite;
+                entity.SpriteLeft = spriteLeft;
+                entity.SpriteRight = spriteRight;
             }
 
             // For debugging
@@ -413,7 +419,7 @@ namespace WolfRender.Services
             tempSprite.Dispose();
         }
 
-        private void RenderPartiallyOccludedGuard(RenderTarget target, int spriteLeft, int spriteRight,
+        private Sprite RenderPartiallyOccludedGuard(RenderTarget target, int spriteLeft, int spriteRight,
             float screenX, float scale, Sprite guardSprite, IEntity entity)
         {
             // Create a render texture the size of the sprite on screen
@@ -458,7 +464,8 @@ namespace WolfRender.Services
 
             // Clean up
             renderTexture.Dispose();
-            clippedSprite.Dispose();
+            //clippedSprite.Dispose();
+            return clippedSprite;
         }
     }
 }
