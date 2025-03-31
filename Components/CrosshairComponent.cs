@@ -11,16 +11,21 @@ namespace WolfRender.Components
 
         public CrosshairComponent(Vector2i windowResolution)
         {
+            var crosshairColor = new Color(255, 253, 208);
             _windowResolution = windowResolution;
             _crosshairLines.Add(new RectangleShape(new Vector2f(10, 1))
             {
                 Position = new Vector2f(windowResolution.X / 2 - 5, windowResolution.Y / 2),
-                FillColor = new Color(255, 255, 255)
+                FillColor = crosshairColor,
+                OutlineColor = crosshairColor,
+                OutlineThickness = 0.5f,
             });
             _crosshairLines.Add(new RectangleShape(new Vector2f(1, 10))
             {
                 Position = new Vector2f(windowResolution.X / 2, windowResolution.Y / 2 - 5),
-                FillColor = new Color(255, 255, 255)
+                FillColor = crosshairColor,
+                OutlineColor = crosshairColor,
+                OutlineThickness = 0.5f
             });
         }
 
